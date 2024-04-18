@@ -1,0 +1,13 @@
+minisom
+xgboost
+shap
+folium
+reportlab
+weasyprint
+pypdf
+PyPDF2
+scikit-learn
+unidecode
+imgkit
+streamlit
+matplotlib
