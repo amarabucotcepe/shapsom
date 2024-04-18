@@ -44,9 +44,28 @@ import imgkit
 import matplotlib as mpl
 from pypdf import PdfMerger
 
+from som import rodar_algoritmo
+# from shap import 
+from report import (
+documento_1,
+documento_2_2_e_2_4,
+documento_2_3,
+documento_2_5,
+documento_2_6,
+documento_7_1,
+salvar_pdfs,
+add_cabecalho,
+gerar_anexos
+)
+
+"""### Anexos"""
+
+gerar_anexos()
 
 st.title("ShapSom")
 st.subheader("Análise de agrupamento de dados")
+
+title = st.text_input("Título do relatório")
 
 file = st.file_uploader("Faça upload do seu arquivo", type=['csv'])
 
@@ -101,3 +120,13 @@ if file is not None:
     if submit_button:
         st.dataframe(selected_df)
 
+        rodar_algoritmo()
+        documento_1()
+        documento_2_2_e_2_4()
+        documento_2_3()
+        documento_2_5()
+        documento_2_6()
+        documento_7_1()
+        salvar_pdfs()
+        add_cabecalho(title)
+        gerar_anexos()
