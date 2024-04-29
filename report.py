@@ -38,7 +38,6 @@ from reportlab.platypus.flowables import Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph
 from unidecode import unidecode
-import weasyprint
 import imgkit
 
 import matplotlib as mpl
