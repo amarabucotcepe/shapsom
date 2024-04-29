@@ -43,8 +43,22 @@ import imgkit
 import matplotlib as mpl
 from pypdf import PdfMerger
 
-from globals import current_label_columns, cluster_distance, current_database, current_database_name, current_hidden_columns, current_input_columns, current_output_columns,epochs, size, sigma, lr, use_shap 
-from shap import make_shap
+import globals
+from shaps import make_shap
+
+global selected_df
+global cluster_distance
+global epochs
+global size 
+global sigma
+global lr 
+global use_shap
+global current_database
+global current_database_name
+global current_hidden_columns
+global current_input_columns
+global current_output_columns
+global current_label_columns
 
 def normalize(data: np.ndarray | list) -> np.ndarray:
     data = (data if isinstance(data, np.ndarray) else np.array(data)).astype(np.float64)
@@ -60,7 +74,6 @@ def cluster_coordinates(coordenadas: list[tuple], distancia_maxima: float) -> li
     return clusters
 
 def create_map(
-    title: str,
     df: pd.DataFrame,
     label_columns: list[str],
     variable_columns: list[str],
@@ -76,6 +89,8 @@ def create_map(
     print("chega aq", label_columns)
     labels = df[label_columns].apply(lambda row: ' - '.join(map(str, row)), axis=1)
     x = df[variable_columns].select_dtypes(include='number').values
+    print(output_columns)
+    print(label_columns)
     y = pd.concat(
         [pd.DataFrame({"label": labels, "Média dos dados": x.mean(axis=1)}), df[output_columns].select_dtypes(include='number')],
         axis=1
@@ -99,7 +114,7 @@ def create_map(
     distance_map = normalize(som.distance_map().T)
     units = som.labels_map(x, labels)
     clusters = cluster_coordinates(list(units.keys()), cluster_distance)
-    global cluster_dict
+    cluster_dict = globals.cluster_dict
 
     # Coleta as informações de cada cluster
     for i, coords in enumerate(clusters):
@@ -139,6 +154,7 @@ def create_map(
             coord_dict[c]["cluster_scores"] = c_score
 
         cluster_dict[f"cluster {i+1}"] = coord_dict
+    globals.cluster_dict = cluster_dict
 
     # SHAP
     #if use_shap:
@@ -167,15 +183,14 @@ def create_map(
 
 def rodar_algoritmo():
         create_map(
-        current_database_name,
-        deepcopy(current_database),
-        cluster_distance=cluster_distance,
-        epochs=epochs,
-        size=size,
-        sigma=sigma,
-        lr=lr,
-        label_columns=current_label_columns,
-        variable_columns=list(filter(lambda c : c in current_database.columns, current_input_columns)),
-        output_columns=deepcopy(current_output_columns),
-        use_shap=use_shap
+        df = deepcopy(globals.current_database),
+        cluster_distance=globals.cluster_distance,
+        epochs=globals.epochs,
+        size=globals.size,
+        sigma=globals.sigma,
+        lr=globals.lr,
+        label_columns=globals.current_label_columns,
+        variable_columns=list(filter(lambda c : c in globals.current_database.columns, globals.current_input_columns)),
+        output_columns=deepcopy(globals.current_output_columns),
+        use_shap=globals.use_shap
     )
