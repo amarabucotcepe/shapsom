@@ -16,7 +16,7 @@ import warnings
 warnings.filterwarnings("ignore")
 from datetime import datetime
 import json
-import folium
+import folium  
 import shutil
 from copy import deepcopy
 from sklearn.preprocessing import MinMaxScaler
@@ -38,8 +38,28 @@ from reportlab.platypus.flowables import Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph
 from unidecode import unidecode
-import weasyprint
 import imgkit
-
 import matplotlib as mpl
-from pypdf import PdfMerger
+
+def make_shap(labels, variable_columns, x, y, use_shap, desc="Gerando gráficos SHAP"):
+    model = XGBRegressor(objective='reg:squarederror', random_state= 34)
+    x *= 10
+    y *= 10
+    model.fit(x, y)
+    globals.shap_columns = variable_columns
+    globals.shap_labels = labels
+    explainer = shap.Explainer(model, x)
+    globals.explanations = [shap.Explanation(values=v, base_values=explainer.expected_value, feature_names=variable_columns) for v in explainer(x)]
+
+    # Salva os mapas um por um e exibe uma barrinha de progresso para o usuário
+    if use_shap:
+        for i, exp in tqdm(enumerate(globals.explanations), desc=desc, total=len(globals.explanations)):
+            fig = plt.figure()
+            shap.waterfall_plot(exp, show=False)
+            plt.title(labels[i])
+            fig.set_size_inches(16, 8)
+            fig.subplots_adjust(left=0.4)
+            plt.close(fig)
+            globals.shape_results[labels[i].split(" - ")[0]] = {}
+            globals.shape_results[labels[i].split(" - ")[0]]['data'] = exp.data.copy()
+            globals.shape_results[labels[i].split(" - ")[0]]['values'] = exp.values.copy()

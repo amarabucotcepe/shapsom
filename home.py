@@ -38,12 +38,12 @@ from reportlab.platypus.flowables import Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph
 from unidecode import unidecode
-import weasyprint
 import imgkit
 
 import matplotlib as mpl
 from pypdf import PdfMerger
-
+#from globals import selected_df, cluster_distance, epochs, size, sigma,lr, use_shap, current_database, current_database_name, current_output_columns, current_hidden_columns, current_input_columns, current_label_columns
+import globals
 from som import rodar_algoritmo
 # from shap import 
 from report import (
@@ -70,12 +70,15 @@ title = st.text_input("Título do relatório")
 file = st.file_uploader("Faça upload do seu arquivo", type=['csv'])
 
 if file is not None:
-
+ 
     if file.name.endswith(".csv"):
-        df = pd.read_csv(file, sep=';')
+        df = pd.read_csv(file, sep=',')
     elif file.name.endswith(".xlsx"):
         df = pd.read_excel(file)
     # st.dataframe(df)
+    
+    globals.current_database = df.dropna()
+    globals.current_database_name = file.name.split(".")[0]
 
     string_list = df.columns.tolist()
 
@@ -86,15 +89,16 @@ if file is not None:
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            nome = st.multiselect("Nome", string_list)
+            globals.current_label_columns = st.multiselect("Nome", string_list)
         with col2:
-            options = [col for col in string_list if col not in nome]
-            entradas = st.multiselect("Entradas", [col for col in string_list if col not in nome])
+            options = [col for col in string_list if col not in globals.current_label_columns]
+            globals.current_input_columns = st.multiselect("Entradas", [col for col in string_list if col not in globals.current_label_columns])
         with col3:
-            saida = st.selectbox("Saída", [col for col in string_list if col not in nome and col not in entradas])
+            globals.current_output_columns = st.multiselect("Saída", [col for col in string_list if col not in globals.current_label_columns and col not in globals.current_input_columns])
         with col4:
-            ocultar = st.multiselect("Ocultar", [col for col in string_list if col not in nome and col not in entradas and col not in saida])
-    selected_df = df.drop(columns=ocultar)
+            globals.current_hidden_columns = st.multiselect("Ocultar", [col for col in string_list if col not in globals.current_label_columns and col not in globals.current_input_columns and col not in globals.current_output_columns])
+
+    selected_df = df.drop(columns=globals.current_hidden_columns)
 
     st.divider()
 
@@ -105,28 +109,27 @@ if file is not None:
     
 
     with st.expander("Parâmetros SOM", expanded=False):
-        cluster_distance = st.slider("Cluster Distance", min_value=0.5, max_value=4.0, value=1.0, step=0.1)
-        epochs = st.slider("Epochs", min_value=2, max_value=5, value=3, step=1)  # Changed step to int
-        size = st.slider("Size", min_value=5, max_value=60, value=30, step=1)  # Changed step to int
-        sigma = st.slider("Sigma", min_value=1, max_value=10, value=9, step=1)  # Changed step to int
-        lr = st.slider("Learning Rate", min_value=-3.0, max_value=-1.0, value=-2.0, step=0.1)
+        globals.cluster_distance = st.slider("Cluster Distance", min_value=0.5, max_value=4.0, value=1.0, step=0.1)
+        globals.epochs = st.slider("Epochs", min_value=2, max_value=5, value=3, step=1)  # Changed step to int
+        globals.size = st.slider("Size", min_value=5, max_value=60, value=30, step=1)  # Changed step to int
+        globals.sigma = st.slider("Sigma", min_value=1, max_value=10, value=9, step=1)  # Changed step to int
+        globals.lr = st.slider("Learning Rate", min_value=-3.0, max_value=-1.0, value=-2.0, step=0.1)
     
-    
-    use_shap = st.checkbox("Criar SHAP",help='Selecione para obter análise completa dos dados')
+    global use_shap
+    globals.use_shap = st.checkbox("Criar SHAP",help='Selecione para obter análise completa dos dados')
 
     submit_button = st.button('Executar')
     
     
     if submit_button:
         st.dataframe(selected_df)
-
         rodar_algoritmo()
-        documento_1()
-        documento_2_2_e_2_4()
-        documento_2_3()
-        documento_2_5()
-        documento_2_6()
-        documento_7_1()
-        salvar_pdfs()
-        add_cabecalho(title)
-        gerar_anexos()
+        # documento_1()
+        # documento_2_2_e_2_4()
+        # documento_2_3()
+        # documento_2_5()
+        # documento_2_6()
+        # documento_7_1()
+        # salvar_pdfs()
+        # add_cabecalho(title)
+        # gerar_anexos()
