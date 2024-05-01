@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
+import plotly.express as px
 
 import branca.colormap as cm
 import folium
@@ -50,35 +51,95 @@ with st.expander('Dicionário de dados 🎲',expanded=False):
     st.table(info_df)
 
 # Calculate correlation
-dfmc = df.pivot_table(index=df.columns[0], values=df.columns[-1], aggfunc='mean')
-dfm = df.pivot_table(index=df.columns[0], values=df.columns[3:-1], aggfunc='mean')
+# dfmc = df.pivot_table(index=df.columns[0], values=df.columns[-1], aggfunc='mean')
+dfmc = df.groupby(df.columns[0])[df.columns[-1]].apply(lambda x: x.mode().iloc[0]).reset_index()
+# dfm = df.pivot_table(index=df.columns[0], values=df.columns[3:], aggfunc='mean')
+dfm = df.groupby(df.columns[0])[df.columns[3:]].apply(lambda x: x.mode().iloc[0]).reset_index()
+
+dfmc[dfmc.columns[-1]] = dfmc[dfmc.columns[-1]].round(2)
 # dfm = df.pivot_table(index=df.columns[0], values=df.columns[3:-1], aggfunc=['mean','std'])
 # dfm.columns = dfm.iloc[0]
 # dfm = dfm[1:]
-# dfm
+st.write(dfm.head(5))
 
-st.info('Distribuição da variável alvo', icon='🌎')
+st.info(f'Município x {dfmc.columns[-1]}', icon='🌎')
 
-# Create a scatterplot of the penultimate column
-fig = go.Figure(data=go.Scatter(x=dfmc.index, y=dfmc[dfmc.columns[-1]], mode='markers'))
+container = st.container(border=True)
+container.write("O gráfico abaixo mostra a distribuição da variável resposta por município. Permite visualizar Municípios com valores extremos e dispersão em torno da média.")
+st.markdown('Estatísticas')
+st.dataframe(dfmc[dfmc.columns[-1]].describe().to_frame().T)
+
+st.divider()
+
+fig = px.scatter(
+dfmc.reset_index(),
+x="Município",
+y=dfmc.columns[-1],
+# size=dfmc.columns[-1],
+hover_name="Município",
+color=dfmc.columns[-1],
+color_continuous_scale='icefire_r',
+size_max=60,
+)
 
 fig.update_layout(
-    title='Scatterplot of ' + df.columns[-1],
-    xaxis_title='Index',
-    yaxis_title=dfmc.columns[-1]
+autosize=False,
+width=800,
+height=500,
+shapes=[
+    dict(
+        type="rect",
+        xref="paper",
+        yref="paper",
+        x0=0,
+        y0=0,
+        x1=1,
+        y1=1,
+        line=dict(
+            color="Grey",
+            width=1,
+            )
+        )
+    ]
 )
 
 # Show the scatterplot in Streamlit
-st.plotly_chart(fig)
+st.plotly_chart(fig, use_container_width=True)
+
+st.info(f'Variáveis por Município x {dfmc.columns[-1]}', icon='🌎')
+
+container = st.container(border=True)
+container.write("O gráfico abaixo mostra a relação da variável explicativa com a variável resposta. Permite visualizar como se correlacionam.")
+with st.expander('ajuda',expanded=False):
+    st.markdown('* $r = 1$:  correlação perfeita positiva, quanto maior o valor de uma variável, maior o valor da outra.')
+    st.markdown('* $r = 0$:  não há correlação, não importa o valor de uma variável, o valor da outra não é afetado.')
+    st.markdown('* $r = -1$:  correlação perfeita negativa, quanto maior o valor de uma variável, menor o valor da outra.')
+
+corr = dfm[dfm.columns[3:-1]].corrwith(dfm[df.columns[-1]]).sort_values(ascending=False)
+
+# Create a heatmap
+plt.figure(figsize=(10,8))
+sns.heatmap(corr.to_frame(), annot=True, cmap='coolwarm_r')
+
+# Show the heatmap in Streamlit
+st.pyplot(plt)
+
+variavel = st.selectbox('Selecione a variável', df.columns[3:-1])
+# Create a scatterplot of the penultimate column
+fig = px.scatter(
+dfm.reset_index(),
+x=variavel,
+y=dfmc.columns[-1],
+# size=dfmc.columns[-1],
+hover_name="Município",
+color=variavel,
+color_continuous_scale='icefire_r',
+)
+
+# Show the scatterplot in Streamlit
+st.plotly_chart(fig, use_container_width=True)
 
 st.info('Correlações por Municipio', icon='⚔️')
-with st.expander('ajuda',expanded=False):
-    st.markdown('* 1= correlação perfeita positiva, quanto maior o valor de uma variável, maior o valor da outra.')
-    st.markdown('* 0= não há correlação, não importa o valor de uma variável, o valor da outra não é afetado.')
-    st.markdown('* -1= correlação perfeita negativa, quanto maior o valor de uma variável, menor o valor da outra.')
-
-
-corr = dfm[dfm.columns[3:-1]].corrwith(dfm[dfm.columns[-1]]).sort_values(ascending=False)
 
 #corr
 
@@ -93,17 +154,8 @@ corr = dfm[dfm.columns[3:-1]].corrwith(dfm[dfm.columns[-1]]).sort_values(ascendi
 # # Show the heatmap in Streamlit
 # st.plotly_chart(fig)
 
-st.divider()
 
-# Create a heatmap
-plt.figure(figsize=(10,8))
-sns.heatmap(corr.to_frame(), annot=True, cmap='coolwarm')
-
-# Show the heatmap in Streamlit
-st.pyplot(plt)
-
-
-with st.expander('Correlações por UBS ⚔️',expanded=False):
+with st.expander('Correlações por subunidade ⚔️',expanded=False):
 
     # Calculate correlation
     corr = df[df.columns[3:-1]].corrwith(df[df.columns[-1]]).sort_values(ascending=False)
@@ -125,18 +177,6 @@ with st.expander('Correlações por UBS ⚔️',expanded=False):
     sns.heatmap(corr.to_frame(), annot=True, cmap='coolwarm')
 
     # Show the heatmap in Streamlit
-    st.pyplot(plt)
-    
-    
-    # Create a boxplot of the last column grouped by the first column
-    plt.figure(figsize=(10, 6))
-    sns.boxplot(x=df[df.columns[0]], y=df[df.columns[-1]])
-
-    plt.title('Boxplot of ' + df.columns[-1] + ' by ' + df.columns[1])
-    plt.xlabel(df.columns[0])
-    plt.ylabel(df.columns[-1])
-
-    # Show the boxplot in Streamlit
     st.pyplot(plt)
 
 st.info('Árvore de decisão', icon='⚔️')
