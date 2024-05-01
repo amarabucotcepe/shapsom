@@ -62,18 +62,30 @@ gerar_anexos
 
 gerar_anexos()
 
-st.title("ShapSom")
+st.title("ShapSom 🤖")
 st.subheader("Análise de agrupamento de dados")
 
-title = st.text_input("Título do relatório")
+title = st.text_input("Título do relatório", help='Escolha o título do relatório')
 
-file = st.file_uploader("Faça upload do seu arquivo", type=['csv'])
+tipo = st.radio('Tipo de arquivo',['csv','excel'], help='Escolha o tipo de arquivo. csv: separado por vírgula, excel: planilha excel')
+
+if tipo == 'csv':
+    download_file = 'modelo.csv'
+else:
+    download_file = 'modelo.xslx'
+
+with st.expander("Precisa do modelo?", expanded=False):
+    st.download_button('Modelo', 'modelo', file_name=download_file, help='Modelo de planilha a ser enviada')
+
+file = st.file_uploader("Faça upload do seu arquivo", type=['csv'], help='Se já preencheu os dados na planilha modelo faça upload de um arquivo csv ou excel, ou faça o download do modelo e preencha com seus dados')
+
 
 if file is not None:
  
-    if file.name.endswith(".csv"):
+    if tipo == 'csv':
+        #checar qual sep está sendo usado
         df = pd.read_csv(file, sep=',')
-    elif file.name.endswith(".xlsx"):
+    else:
         df = pd.read_excel(file)
     # st.dataframe(df)
     
