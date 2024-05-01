@@ -55,19 +55,23 @@ with st.expander('Dicionário de dados 🎲',expanded=False):
 
 st.info('Mapa da variável alvo', icon='🌎')
 
-# # Convert the DataFrame to a GeoDataFrame
-gdf = gpd.read_file('PE_Municipios_2022.zip')
-gdf = gdf.merge(df[[df.columns[0],df.columns[-1]]], left_on='NM_MUN', right_on=df.columns[0])
+def generate_map():
+    # Convert the DataFrame to a GeoDataFrame
+    gdf = gpd.read_file('PE_Municipios_2022.zip')
+    gdf = gdf.merge(df[[df.columns[0],df.columns[-1]]], left_on='NM_MUN', right_on=df.columns[0])
 
-fig, ax = plt.subplots(1, 1)
+    fig, ax = plt.subplots(1, 1)
 
-df[df.columns[-1]] = df[df.columns[-1]].round(2)
+    df[df.columns[-1]] = df[df.columns[-1]].round(2)
 
-m = gdf.explore(df.columns[-1], cmap='RdBu')
+    m = gdf.explore(df.columns[-1], cmap='RdBu')
 
-components.html(m._repr_html_(), height=600)
+    components.html(m._repr_html_(), height=600)
 
-outfp = r"mapa.html"
+    outfp = r"mapa.html"
 
-m.save(outfp)
+    m.save(outfp)
+
+with st.spinner('Gerando mapa...'):
+    generate_map()
 
