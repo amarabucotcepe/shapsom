@@ -7,8 +7,11 @@ import streamlit.components.v1 as components
 import plotly.express as px
 
 import branca.colormap as cm
+from branca.colormap import linear
+
 import folium
 import json
+from streamlit_folium import st_folium
 
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
@@ -50,6 +53,9 @@ with st.expander('Dicionário de dados 🎲',expanded=False):
     # Display the dataframe info as a table
     st.table(info_df)
 
+st.info(f'Município x {df.columns[-1]}', icon='🌎')
+
+
 # Calculate correlation
 # dfmc = df.pivot_table(index=df.columns[0], values=df.columns[-1], aggfunc='mean')
 dfmc = df.groupby(df.columns[0])[df.columns[-1]].apply(lambda x: x.mode().iloc[0]).reset_index()
@@ -60,9 +66,8 @@ dfmc[dfmc.columns[-1]] = dfmc[dfmc.columns[-1]].round(2)
 # dfm = df.pivot_table(index=df.columns[0], values=df.columns[3:-1], aggfunc=['mean','std'])
 # dfm.columns = dfm.iloc[0]
 # dfm = dfm[1:]
-st.write(dfm.head(5))
+# st.write(dfm.head(5))
 
-st.info(f'Município x {dfmc.columns[-1]}', icon='🌎')
 
 container = st.container(border=True)
 container.write("O gráfico abaixo mostra a distribuição da variável resposta por município. Permite visualizar Municípios com valores extremos e dispersão em torno da média.")
@@ -161,22 +166,20 @@ with st.expander('Correlações por subunidade ⚔️',expanded=False):
     corr = df[df.columns[3:-1]].corrwith(df[df.columns[-1]]).sort_values(ascending=False)
     # corr
 
-    # # Create a heatmap
-    # fig = go.Figure(data=go.Heatmap(
-    #                 z=corr.values,
-    #                 x=corr.index,
-    #                 y=['0'],
-    #                 hoverongaps = False,
-    #                 colorscale='Viridis'))
+    # Create a heatmap
+    fig = go.Figure(data=go.Heatmap(
+                    z=corr.values,
+                    x=corr.index,
+                    y=['0'],
+                    hoverongaps = False,
+                    colorscale='Viridis'))
 
-    # # Show the heatmap in Streamlit
-    # st.plotly_chart(fig)
+    # Show the heatmap in Streamlit
+    st.plotly_chart(fig)
 
     # Create a heatmap
     plt.figure(figsize=(10,8))
-    sns.heatmap(corr.to_frame(), annot=True, cmap='coolwarm')
+    sns.heatmap(corr.to_frame(), annot=True, cmap='coolwarm_r')
 
     # Show the heatmap in Streamlit
     st.pyplot(plt)
-
-st.info('Árvore de decisão', icon='⚔️')
