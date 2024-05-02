@@ -54,7 +54,7 @@ with st.expander('Dicionário de dados 🎲',expanded=False):
     # Display the dataframe info as a table
     st.table(info_df)
 
-st.info('Árvore de decisão', icon='⚔️')
+
 
 # Define the features and the target
 X = df[df.columns[3:-1]]
@@ -66,6 +66,17 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # Create a decision tree regressor and fit it to the training data
 reg = DecisionTreeRegressor(max_depth=3, random_state=42)
 reg.fit(X_train, y_train)
+
+# Create a pandas DataFrame with feature importances
+feature_importances = pd.DataFrame(reg.feature_importances_,
+                                   index = X.columns,
+                                   columns=['importance']).sort_values('importance', ascending=False)
+
+st.info('Importância das variáveis', icon='📊')
+# Display the feature importances in Streamlit
+st.dataframe(feature_importances)
+
+st.info('Árvore de decisão', icon='🌲')
 
 # Create a larger figure
 fig, ax = plt.subplots(figsize=(20, 20))
