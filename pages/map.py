@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import geopandas as gpd
 
-import plotly.graph_objects as go
+import os
 
 # Set page configuration
 st.set_page_config(layout='wide')
@@ -73,5 +73,9 @@ def generate_map():
     m.save(outfp)
 
 with st.spinner('Gerando mapa...'):
-    generate_map()
+    if os.path.exists('mapa.html'):
+      m_repr_html_ = open('mapa.html').read()
+      components.html(m_repr_html_, height=600)
+    else:
+        generate_map()
 
