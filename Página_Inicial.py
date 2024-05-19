@@ -30,22 +30,30 @@ if file is not None:
     string_list = df.columns.tolist()
     st.divider()
 
-    st.subheader("Selecione as colunas")
-    with st.container():
+    st.info("Caso deseja modificar a escolha de colunas padrões, clique na opção abaixo:")
+    with st.expander("Escolher colunas", expanded=False):
+
         col1, col2, col3, col4 = st.columns(4)
+        default_col1 = [string_list[0]] if string_list else []
         with col1:
             others = []
-            globals.current_label_columns = st.multiselect("Nome", [col for col in string_list if col not in others], max_selections=1)
+            globals.current_label_columns = st.multiselect("Nome", [col for col in string_list if col not in others], default=default_col1, max_selections=1)
+
+        default_col2 = string_list[1:-1] if len(string_list) > 2 else []
         with col2:
             others = globals.current_label_columns
-            globals.current_input_columns = st.multiselect("Entradas", [col for col in string_list if col not in others])
+            globals.current_input_columns = st.multiselect("Entradas", [col for col in string_list if col not in others], default=default_col2)
+        
+        default_col3 = [string_list[-1]] if string_list else []
         with col3:
             others = globals.current_label_columns + globals.current_input_columns
-            globals.current_output_columns = st.multiselect("Saída", [col for col in string_list if col not in others], max_selections=1)
+            globals.current_output_columns = st.multiselect("Saída", [col for col in string_list if col not in others],default=default_col3, max_selections=1)
+        
         with col4:
             others = globals.current_label_columns + globals.current_input_columns + globals.current_output_columns
             globals.current_hidden_columns = st.multiselect("Ocultar", [col for col in string_list if col not in others])
 
+    st.info("Caso não queira modificar as colunas selecionadas por padrão, clique no botão 'Pronto'")
     choose_columns = st.button("Pronto")
     if choose_columns:
         globals.som_chart = None

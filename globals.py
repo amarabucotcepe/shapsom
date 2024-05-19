@@ -16,3 +16,5 @@ color_dict = {}
 explanations = []
 shap_labels = ''
 shap_columns = ''
+file_uploaded_start_flag = False
+som_chart = None
