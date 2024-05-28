@@ -61,17 +61,21 @@ def get_som_data(som: MiniSom, labels, x, y, cluster_distance) -> pd.DataFrame:
         
         min_hsv, max_hsv = hsv_regions[i]
         min_score, max_score = min(cell_scores), max(cell_scores)
+        central_color = hsv_to_hex([(min_hsv+max_hsv / 2), 1, 1])
+        
         for c in coord_dict.keys():
-            _labels = ", ".join(coord_dict[c]["labels"])
-            _score = coord_dict[c]["cell_score"]
-            _x = c[0]
-            _y = c[1]
-            _color_percent = 0.5 if (min_score == max_score) else (_score - min_score) / (max_score - min_score)
-            _hue_hsv = (max_hsv * _color_percent) + (min_hsv * (1 - _color_percent))
-            _color_hex = hsv_to_hex([_hue_hsv, 1, 1])
-            som_data_list.append([_labels, round(_score, 2), _x, _y, _color_hex, i+1])
+            for municipio in coord_dict[c]["labels"]:
+                #_labels = ", ".join(coord_dict[c]["labels"])
+                _labels = municipio
+                _score = coord_dict[c]["cell_score"]
+                _x = c[0]
+                _y = c[1]
+                _color_percent = 0.5 if (min_score == max_score) else (_score - min_score) / (max_score - min_score)
+                _hue_hsv = (max_hsv * _color_percent) + (min_hsv * (1 - _color_percent))
+                _color_hex = hsv_to_hex([_hue_hsv, 1, 1])
+                som_data_list.append([_labels, round(_score, 2), _x, _y, _color_hex, central_color, i+1])
     
-    som_data = pd.DataFrame(som_data_list, columns=["labels", "score", "x", "y", "color", "cluster"])
+    som_data = pd.DataFrame(som_data_list, columns=["labels", "score", "x", "y", "color", "central_color","cluster"])
     return som_data
 
 def create_map(df: pd.DataFrame, label_column: str, variable_columns: 'list[str]', output_column: str, size: int = 50, lr: float = 1e-1, epochs: int = 1000, sigma = 2, topology = "hexagonal", cluster_distance: float = 2, interval_epochs: int=100, output_influences=True):
@@ -101,6 +105,6 @@ def create_map(df: pd.DataFrame, label_column: str, variable_columns: 'list[str]
     
     som.pca_weights_init(x)
     for _ in range(epochs // interval_epochs):
-        som.train_random(x, interval_epochs, verbose=False)
+        som.train(x, interval_epochs, verbose=False)
         som_data = get_som_data(som, labels, x, y, cluster_distance)
         yield som_data

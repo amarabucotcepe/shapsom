@@ -119,7 +119,7 @@ if file is not None:
             load_percentage = round((i+1) * (globals.epochs//20) * 100 / globals.epochs)
             chart_title = f"Mapa SOM ({load_percentage}%)" if load_percentage < 100 else "Mapa SOM"
             chart_data = som_data
-            chart_data.columns = ["Municípios", "Nota", "x", "y", "Cor", "Grupo"]
+            chart_data.columns = ["Municípios", "Nota", "x", "y", "Cor", "Cor Central", "Grupo"]
             ###################################################################################
             globals.som_data = chart_data # OU USA ISSO AQUI PRA PEGAR OS RESULTADOS DO SOM!!!#
             ###################################################################################
