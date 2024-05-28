@@ -51,9 +51,17 @@ def secao4():
     #Criando as variáveis
     original_df = globals.crunched_df
     df = globals.som_data
+    st.dataframe(original_df)
     max_grupo = df['Grupo'].max()
     df_expandido = df.assign(municipios=df['Municípios'].str.split(',')).explode('municipios').reset_index(drop=True)
     df_expandido = df_expandido.drop(columns=['Municípios', 'x', 'y'])
+
+    output_column = original_df.columns[-1]
+    output_values = original_df.iloc[:, -1]
+    df_expandido[output_column] = output_values.values
+
+    st.dataframe(df_expandido)
+
     grupos = df_expandido.groupby('Grupo')
 
             
@@ -65,17 +73,21 @@ def secao4():
     for i in range(max_grupo+1):
        if i in grupos.groups:
         #Tabelas
-        st.info(f'Grupo {i}')
         grupo_df = grupos.get_group(i)
+        media_valor = grupo_df[output_column].mean()
+        media_valor = media_valor.round(2)
         cor_grupo = grupo_df['Cor'].iloc[0]
         lista_cores = grupo_df['Cor'].tolist()
+
+        st.info(f'Grupo {i}')
+        st.text(f'Média de {output_column} do grupo: {media_valor}')
 
         def apply_color(val):
             return f"background-color: {cor_grupo}; "
 
-        st.dataframe(grupo_df.style.applymap(apply_color).format({'Nota':'{:.2f}'}), column_order=['municipios', 'Nota', 'Grupo', 'Cor'] ,column_config={
+        st.dataframe(grupo_df.style.applymap(apply_color).format({output_column:'{:.2f}'}), column_order=['municipios', 'Nota', 'Grupo', 'Cor', output_column] ,column_config={
             'municipios': 'Municípios',
-            'Nota': 'Nota do Município',
+            'Nota': None,
             'Grupo': 'Grupo',
             'Cor': None
             }             
@@ -86,7 +98,7 @@ def secao4():
         def generate_map():
             # Convert the DataFrame to a GeoDataFrame
             gdf = gpd.read_file('PE_Municipios_2022.zip')
-            gdf = gdf.merge(grupo_df[[grupo_df.columns[2],grupo_df.columns[-1]]], left_on='NM_MUN', right_on=grupo_df.columns[-1])
+            gdf = gdf.merge(grupo_df[[grupo_df.columns[2],grupo_df.columns[-2]]], left_on='NM_MUN', right_on=grupo_df.columns[-2])
 
             fig, ax = plt.subplots(1, 1)
 
