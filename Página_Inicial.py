@@ -23,9 +23,38 @@ with st.expander("Precisa do modelo?", expanded=False):
 
 file = st.file_uploader("Faça upload do seu arquivo", type=['csv'], help='Se já preencheu os dados na planilha modelo faça upload de um arquivo csv ou excel, ou faça o download do modelo e preencha com seus dados')
 
+def verificarColunaDesc(database):
+  nStrings = 0
+  for i in range(database.shape[1]):
+    try:
+      float(np.array(database.iloc[0])[i])
+    except ValueError:
+      nStrings+=1
+  if(nStrings==database.shape[1]):
+    return True
+  else:
+    return False
+  
+def convert_numeric(x):
+    try:
+        if float(x).is_integer():
+            return np.int64(float(x))
+        else:
+            return np.float64(x)
+    except (ValueError,AttributeError):
+        return x
+    
 if file is not None:
     df = pd.read_csv(file, sep=',') if tipo == 'csv' else pd.read_excel(file)
-    globals.current_database = df.dropna()
+    globals.original_database = df.copy()
+
+    if(verificarColunaDesc(globals.original_database)):
+        globals.current_database = globals.original_database.drop(globals.original_database.index[0]).applymap(convert_numeric)
+        globals.current_database.index = globals.current_database.index-1
+    else:
+        globals.current_database = globals.original_database
+
+    globals.current_database = globals.current_database.dropna()
     globals.current_database_name = file.name.split(".")[0]
     string_list = df.columns.tolist()
     st.divider()

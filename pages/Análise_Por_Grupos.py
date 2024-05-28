@@ -20,6 +20,11 @@ from sklearn import tree
 import matplotlib.pyplot as plt
 import globals
 
+import unicodedata
+from datetime import datetime
+import pytz
+from sortedcontainers import SortedSet
+
 import geopandas as gpd
 import os
 
@@ -36,8 +41,271 @@ for i in range(globals.som_data['Grupo'].max() + 1):
         os.remove(filepath)
         
 def secao1():
-    st.subheader('Seção 1 - Dicionário de Dados')
-    st.text('(explicar o que é o dicionário de Dados)')
+    
+    def verificarColunaDesc(database):
+        nStrings = 0
+        for i in range(database.shape[1]):
+            try:
+                float(np.array(database.iloc[0])[i])
+            except ValueError:
+                nStrings+=1
+        if(nStrings==database.shape[1]):
+            return True
+        else:
+            return False
+  
+    def convert_numeric(x):
+        try:
+            if float(x).is_integer():
+                return int(float(x))
+            else:
+                return float(x)
+        except (ValueError,AttributeError):
+            return x
+
+    # Cálculo de data
+    current_time_utc = datetime.utcnow()
+    your_timezone = pytz.timezone('America/Recife')
+    current_time_local = current_time_utc.replace(tzinfo=pytz.utc).astimezone(your_timezone)
+    formatted_date = current_time_local.strftime("%d/%m/%Y")
+ 
+    if(globals.current_database is not None):
+        # Gerar base de dados sem descrição completa
+        if(verificarColunaDesc(globals.original_database)):
+            analyzed_database = globals.original_database.drop(globals.original_database.index[0]).applymap(convert_numeric)
+            analyzed_database.index = analyzed_database.index-1
+        else:
+            analyzed_database = globals.original_database
+
+        # Gerar primeira seção
+        num_rows, num_columns = analyzed_database.shape
+        texto1 = 'Este relatório foi elaborado com base nos dados presentes no arquivo “'+unicodedata.normalize('NFKC', globals.current_database_name)+'” no dia '+formatted_date+'. A tabela fornecida possui '+str(num_rows)+' linhas e '+str(num_columns)+' colunas.'
+        valoresFaltantes = analyzed_database.isnull().sum().sum()
+        if(valoresFaltantes==0):
+            textoFaltantes = 'A tabela não possui valores faltantes.'
+        elif(valoresFaltantes==1):
+            textoFaltantes = 'A tabela possui 1 valor faltante na linha '+str(1+np.where(analyzed_database.isnull())[0][0]) +' e na coluna "'+analyzed_database.columns[np.where(analyzed_database.isnull())[1][0]]+'".'
+        else:
+            textoFaltantes = 'A tabela possui '+str(valoresFaltantes)+' valores faltantes'
+            if(valoresFaltantes < 6):
+                textoFaltantes += ' nas seguintes localizações: '
+                for i in range(valoresFaltantes):
+                    textoFaltantes += 'linha '+str(1+np.where(analyzed_database.isnull())[0][i]) +' e coluna "'+analyzed_database.columns[np.where(analyzed_database.isnull())[1][i]]+'", '
+                textoFaltantes = textoFaltantes[:-2]+'.'
+            else:
+                textoFaltantes += '.'
+
+        texto2 = textoFaltantes+ ' A seguir, na tabela 1, apresentamos o dicionário de dados. É importante notar que colunas com texto ou aquelas que foram ocultadas durante a criação do mapa não foram incluídas na análise.'
+
+        # Dicionário de dados
+
+        def checarTipo(X,tipo):
+            if(tipo=='01'):
+                for i in X:
+                    if(i not in [0,1]):
+                        return False
+                return True
+            elif(tipo=='0'):
+                for i in X:
+                    if(i != 0):
+                        return False
+                return True
+            elif(tipo=='1'):
+                for i in X:
+                    if(i != 1):
+                        return False
+                return True
+            else:
+                for i in X:
+                    if(not isinstance(i,tipo)):
+                        return False
+                return True
+
+        def gerarArray(X):
+            array1 = []
+            for i in X:
+                array1+= [i]
+            return array1
+
+        def detectarTipo(X):
+
+            tipo = ''
+            faltantes = ''
+
+            if(X.isnull().sum()!=0):
+                faltantes = ' com valores faltantes'
+                X = X.dropna()
+
+            arrX = gerarArray(X)
+
+            if(checarTipo(arrX,'0')):
+                tipo ='Numérico (0)'
+            elif(checarTipo(arrX,'1')):
+                tipo ='Numérico (1)'
+            elif(checarTipo(arrX,'01')):
+                tipo ='Binário (0 ou 1)'
+            elif(checarTipo(arrX,(int,float))):
+                tipo = 'Numérico'
+                unicos = [int(num) if num == int(num) else format(num,'.1f') for num in SortedSet(X)]
+                if(len(unicos)<4):
+                    tipo+= ' ('
+                    for i in unicos:
+                        tipo+=str(i)+', '
+                    tipo = tipo[:-2]
+                    tipo+= ')'
+                elif(max(arrX)<=1 and min(arrX)>=0):
+                    tipo += ' (entre 0 e 1)'
+            elif(checarTipo(arrX,str)):
+                tipo = 'Textual'
+            else:
+                tipo = 'Outro'
+
+            return tipo+faltantes
+
+        tiposDados = []
+        for i in range(analyzed_database.columns.size):
+            tiposDados+=[detectarTipo(analyzed_database.iloc[:,i])]
+        nomesDados = analyzed_database.columns.tolist()
+
+        # Descrição de dados
+
+        descDados = []
+
+        if(globals.original_database.shape!=analyzed_database.shape):
+            descDados = np.array(globals.original_database.iloc[0])
+        
+        # Número das variáveis
+
+        numDados = []
+        varNum = 1
+        for i in range(len(tiposDados)):
+            if(nomesDados[i] in globals.current_label_columns):
+                numDados += ['Nome']
+            elif(nomesDados[i] in globals.current_output_columns):
+                numDados += ['Saída']
+            elif(nomesDados[i] in analyzed_database[globals.current_input_columns].select_dtypes(include='number').columns):
+                numDados += [varNum]
+                varNum += 1
+            else:
+                numDados+=['']
+
+        def insert_newlines(text, every=40):
+            lines = []
+            while len(text) > every:
+                split_index = text.rfind(' ', 0, every)
+                if split_index == -1:
+                    split_index = every
+                lines.append(text[:split_index].strip())
+                text = text[split_index:].strip()
+            lines.append(text)
+            return '\n'.join(lines)
+
+        def dividirlinhas(data, every):
+            if(len(data)>every):
+                data = insert_newlines(data, every=every)
+            return data
+        
+   
+        # Geração do dicionário de dados
+        if(len(descDados)==0):
+            dicionarioDados = np.array([numDados,nomesDados,tiposDados]).tolist()
+            for i in range(len(dicionarioDados[1])):
+                dicionarioDados[1][i]=dividirlinhas(dicionarioDados[1][i],80)
+            for i in range(len(dicionarioDados[2])):
+                dicionarioDados[2][i]=dividirlinhas(dicionarioDados[2][i],25)
+        else:
+            dicionarioDados = np.array([numDados,nomesDados,descDados,tiposDados]).tolist()
+            for i in range(len(dicionarioDados[1])):
+                dicionarioDados[1][i]=dividirlinhas(dicionarioDados[1][i],40)
+            for i in range(len(dicionarioDados[2])):
+                dicionarioDados[2][i]=dividirlinhas(dicionarioDados[2][i],40)
+            for i in range(len(dicionarioDados[3])):
+                dicionarioDados[3][i]=dividirlinhas(dicionarioDados[3][i],25)
+        dicionarioDados = np.array(dicionarioDados).T.tolist()
+
+
+        dicionarioDados = pd.DataFrame(dicionarioDados)
+        if(len(descDados)==0):
+            dicionarioDados.columns = ['Fator','Nome da coluna','Tipo de dado']
+        else:
+            dicionarioDados.columns = ['Fator','Nome da coluna','Descrição do dado','Tipo de dado']
+
+    def gerarRetangulo(texto):
+        st.markdown(
+        f'<div style="background-color: #CCCCCC; border: 2px solid #808080; border-radius: 5px; padding: 10px">{texto}</div>',
+        unsafe_allow_html=True
+    )
+        
+    def gerarEspaco():
+        st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
+    
+
+    st.subheader('Seção 1 - Descrição do arquivo de entrada')
+    if( globals.current_database is None):
+        st.write('Escolha a base de dados.')
+    else:
+        st.write('#### 1.1 Dados de Treinamento')
+        gerarEspaco()
+        textoSOM = 'Um dicionário de dados é uma tabela que contém informações sobre os dados disponibilizados. As informações reveladas abaixo revelam o número atribuído a cada fator, sua descrição quando disponibilizada e seu tipo de dado.'
+        gerarRetangulo(textoSOM)
+        gerarEspaco()
+        st.write(texto1)
+        st.write(texto2)
+
+        custom_css = """
+        
+        <style>
+        thead th {
+            background-color: #CCCCCC;
+            color: white;
+        }
+        </style>
+        """
+        st.markdown(custom_css, unsafe_allow_html=True)
+
+        if( globals.current_database is not None):
+            st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+
+        gerarEspaco()
+        st.write('#### 1.2 Parâmetros de Treinamento')
+        gerarEspaco()
+        textoSOM = '''Um Mapa Auto-Organizável (SOM) é uma técnica de aprendizado não supervisionado usada para visualizar e organizar dados complexos em uma representação bidimensional. Os principais parâmetros que definem um mapa SOM incluem:
+        \n●	Topologia hexagonal: Define como as células do mapa influenciam suas vizinhas em um arranjo hexagonal.
+        \n●	Distância de cluster: Determina como as unidades são agrupadas com base na similaridade dos dados.
+        \n●	Épocas: Representam o número de vezes que o modelo passa pelos dados durante o treinamento.
+        \n●	Tamanho do mapa: Define o número total de unidades no mapa.
+        \n●	Sigma: O raio de influência de cada unidade durante o treinamento.
+        \n●	Taxa de aprendizado: Controla a magnitude das atualizações dos pesos das unidades durante o treinamento.
+        '''
+        gerarRetangulo(textoSOM)
+        gerarEspaco()
+        st.write('Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:')
+        param_treino = [
+            "Topologia: "+str(globals.topology),
+            f"Distância de cluster: "+str(globals.cluster_distance),
+            f"Épocas: "+str(globals.epochs),
+            f"Tamanho do mapa: "+str(globals.size),
+            f"Sigma: "+str(globals.sigma),
+            f"Taxa de aprendizado: "+str(globals.lr)    
+        ]
+        for item in param_treino:
+            st.write(f"- {item}")
+        
+        #if(globals.current_output_columns != []):
+        #    gerarEspaco()
+        #    st.write('#### 1.3 Parâmetros de Triagem')
+        #    gerarEspaco()
+        #    textoTriagem = 'A etapa de triagem realizará uma análise filtrada em relação à saída "'+globals.current_output_columns[0]+'". Os limites mínimo e máximo determinam o intervalo percentual do filtro realizado.'
+        #    gerarRetangulo(textoTriagem)
+        #    gerarEspaco()
+        #    st.write('Os limites utilizados para a realização da triagem foram:')
+        #    param_triagem = [
+        #        f"Limite mínimo: {min_filter*100:.0f}%",
+        #        f"Limite máximo: {max_filter*100:.0f}%"
+        #    ]
+        #    for item in param_triagem:
+        #        st.write(f"- {item}")
+        #    gerarEspaco()
 
 def secao2():
     st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
