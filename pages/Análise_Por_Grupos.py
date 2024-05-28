@@ -313,7 +313,42 @@ def secao2():
     
 def secao3():
     st.subheader('Seção 3 - Análise entre grupos')
-    st.text('Explicar como os grupos são formados (explicar o SOM e o conceito de clusters etc) e explicar os valores da tabela')
+   
+    st.markdown('''<div max-width: '70%'>Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
+            
+    Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
+    "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias. Os mapas gerados pelas Redes SOM são topológicos, não geográficos, o que permite tratar diferentes entidades de forma justa e diligente, com base em suas semelhanças.<div>''', unsafe_allow_html=True)
+    
+    #st.text(globals.som_data)
+    tabela_df = globals.som_data
+    tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
+
+    
+    tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
+
+    nome_variavel_coluna = 'Nome Variável'
+    grupos_colunas = sorted(tabela_unica['Grupo'].unique())
+    colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
+
+    
+    novo_df = pd.DataFrame(columns=colunas_novo_df)
+
+    for idx, nome_variavel in enumerate(globals.shap_columns):
+        novo_df.at[idx, 'Nome Variável'] = nome_variavel
+        for grupo in grupos_colunas:
+            valores_grupo = tabela_unica.loc[tabela_unica['Grupo'] == grupo, 'SHAP Media Cluster'].values
+            if len(valores_grupo) > 0 and len(valores_grupo[0]) > idx:
+                novo_df.at[idx, f'Grupo {grupo}'] = valores_grupo[0][idx]
+            else:
+                novo_df.at[idx, f'Grupo {grupo}'] = None
+    
+    #print(novo_df)
+    #novo_df = novo_df.style.apply_index()
+    
+    novo_df = novo_df.style.set_caption("Tabela de atributos vs agrupamento")
+    
+    st.dataframe(novo_df, hide_index=True,)
+
 
 def secao4():
     #Criando as variáveis

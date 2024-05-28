@@ -17,6 +17,7 @@ explanations = []
 shap_labels = ''
 shap_columns = ''
 shap_explanations = ''
+shap_data = {}
 som_data = {}
 file_uploaded_start_flag = False
 som_chart = None
