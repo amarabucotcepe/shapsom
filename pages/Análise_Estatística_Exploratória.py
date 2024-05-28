@@ -41,18 +41,6 @@ df =  globals.current_database
 
 # st.write(df)
 
-with st.expander('Dicionário de dados 🎲',expanded=False):
-    # Get dataframe info
-    info_data = {
-        'Column': df.columns,
-        'Non-Null Count': df.count(),
-        'Dtype': df.dtypes
-    }
-
-    info_df = pd.DataFrame(info_data).reset_index().drop('index', axis=1)
-
-    # Display the dataframe info as a table
-    st.table(info_df)
 
 st.info('Mapa da variável alvo', icon='🌎')
 st.subheader('Mapa da variável alvo')
