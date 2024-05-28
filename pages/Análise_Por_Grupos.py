@@ -51,7 +51,6 @@ def secao4():
     #Criando as variáveis
     original_df = globals.crunched_df
     df = globals.som_data
-    st.dataframe(original_df)
     max_grupo = df['Grupo'].max()
     df_expandido = df.assign(municipios=df['Municípios'].str.split(',')).explode('municipios').reset_index(drop=True)
     df_expandido = df_expandido.drop(columns=['Municípios', 'x', 'y'])
@@ -59,8 +58,6 @@ def secao4():
     output_column = original_df.columns[-1]
     output_values = original_df.iloc[:, -1]
     df_expandido[output_column] = output_values.values
-
-    st.dataframe(df_expandido)
 
     grupos = df_expandido.groupby('Grupo')
 
