@@ -30,7 +30,7 @@ if file is not None:
     string_list = df.columns.tolist()
     st.divider()
 
-    st.info("Caso deseja modificar a escolha de colunas padrões, clique na opção abaixo:")
+    st.info("Caso deseje modificar a escolha de colunas padrões, clique na opção abaixo:")
     with st.expander("Escolher colunas", expanded=False):
 
         col1, col2, col3, col4 = st.columns(4)
