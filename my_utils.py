@@ -108,3 +108,18 @@ def create_map(df: pd.DataFrame, label_column: str, variable_columns: 'list[str]
         som.train(x, interval_epochs, verbose=False)
         som_data = get_som_data(som, labels, x, y, cluster_distance)
         yield som_data
+
+def verificarColunaDesc(database):
+    nStrings = 0
+    for i in range(database.shape[1]):
+        try:
+            float(np.array(database.iloc[0])[i])
+        except ValueError:
+            nStrings+=1
+    return nStrings==database.shape[1]
+  
+def convert_numeric(x):
+    try:
+        return np.int64(float(x)) if float(x).is_integer() else np.float64(x)
+    except (ValueError,AttributeError):
+        return x
