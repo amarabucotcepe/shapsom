@@ -2,13 +2,61 @@ import pandas as pd
 import numpy as np
 import random
 import string
+import streamlit as st
 from minisom import MiniSom
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+import io
 from scipy.cluster.hierarchy import linkage, fcluster
 import colorsys
 import warnings
+import globals
 warnings.filterwarnings("ignore")
 
 HEX_SHAPE = "M0,-1 L0.866,-0.5 L0.866,0.5 L0,1 L-0.866,0.5 L-0.866,-0.5 Z"
+
+def add_cabecalho(input_pdf, move_content_down=0):
+    image_path = 'cabecalho.jpeg'
+    with open(input_pdf, "rb") as input_file:
+        pdf_reader = PdfReader(input_file)
+        pdf_writer = PdfWriter()
+        image = ImageReader(image_path)
+
+        if input_pdf == 'Relatório de Auditoria.pdf':
+            pdf_writer.add_page(pdf_reader.pages[0])
+            start = 1
+        else:
+            start = 0
+
+        # Iterar sobre todas as páginas do PDF de entrada
+        for page_num in range(start, len(pdf_reader.pages)):
+            # Obter a página atual
+            page = pdf_reader.pages[page_num]
+            packet = io.BytesIO()
+            can = canvas.Canvas(packet, pagesize=letter)
+            page_w, page_h = letter
+            # Adicionar a imagem ao topo da página
+            can.drawImage(image_path, inch-8, page_h-50,page_w-inch-52,50) # Ajuste as coordenadas e o tamanho conforme necessário
+
+            # Fechar o canvas
+            can.save()
+
+            # Mover para o início do stream
+            packet.seek(0)
+            new_pdf = PdfReader(packet)
+
+            # Mesclar o conteúdo do canvas com a página atual do PDF
+            page.merge_page(new_pdf.pages[0])
+
+            # Adicionar a página modificada ao PDF de saída
+            pdf_writer.add_page(page)
+
+        # Salvar o PDF de saída
+        with open(input_pdf, "wb") as output_file:
+            pdf_writer.write(output_file)
 
 def cluster_coordinates(coordenadas: 'list[tuple]', distancia_maxima: float) -> 'list[list[tuple]]':
     '''Recebe uma lista de coordenadas e devolve elas agrupadas de acordo com a distância definida'''
@@ -40,6 +88,7 @@ def get_som_data(som: MiniSom, labels, x, y, cluster_distance) -> pd.DataFrame:
     is_hex = som.topology == "hexagonal"
     units = {((_x + 0.5) if (is_hex and _y % 2 == 1) else (_x), _y) : units[_x,_y] for _x,_y in units.keys()}
     clusters = cluster_coordinates(list(units.keys()), cluster_distance)
+    cluster_dict = globals.cluster_dict
     
     cluster_amount = len(clusters)
     hsv_boundaries = ((np.arange(cluster_amount+1) / (cluster_amount+1)) * 360).flatten().tolist()
@@ -57,8 +106,12 @@ def get_som_data(som: MiniSom, labels, x, y, cluster_distance) -> pd.DataFrame:
             variables = [x[list(labels).index(v)] for v in units[c]]
             cell_score = np.average(score_data)
             cell_scores.append(cell_score)
-            coord_dict[c] = {"labels": cell_labels, "scores": score_data, "variables": variables, "cell_score": cell_score}
-        
+            score_dict = {}
+            for score_type in y.columns[1:]:
+                data = [y.loc[y['label'] == u, score_type].values[0] for u in cell_labels]
+                score_dict[score_type] = data
+            coord_dict[c] = {"labels": cell_labels, "score": score_dict,"scores": score_data, "variables": variables, "cell_score": cell_score, "cluster": i}
+    
         min_hsv, max_hsv = hsv_regions[i]
         min_score, max_score = min(cell_scores), max(cell_scores)
         central_color = hsv_to_hex([(min_hsv+max_hsv / 2), 1, 1])
@@ -74,7 +127,23 @@ def get_som_data(som: MiniSom, labels, x, y, cluster_distance) -> pd.DataFrame:
                 _hue_hsv = (max_hsv * _color_percent) + (min_hsv * (1 - _color_percent))
                 _color_hex = hsv_to_hex([_hue_hsv, 1, 1])
                 som_data_list.append([_labels, round(_score, 2), _x, _y, _color_hex, central_color, i+1])
-    
+
+        score_dict = {}
+        for c in coord_dict.keys():
+            for score_type in coord_dict[c]["score"].keys():
+                if not score_type in score_dict.keys():
+                    score_dict[score_type] = []
+                score_dict[score_type] += coord_dict[c]["score"][score_type]
+
+        c_score = {}
+        for k in score_dict.keys():
+            c_score[k] = np.average(score_dict[k])
+
+        for c in coord_dict.keys():
+            coord_dict[c]["cluster_scores"] = c_score
+
+        cluster_dict[f"cluster {i+1}"] = coord_dict
+    globals.cluster_dict = cluster_dict
     som_data = pd.DataFrame(som_data_list, columns=["labels", "score", "x", "y", "color", "central_color","cluster"])
     return som_data
 

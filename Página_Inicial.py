@@ -14,7 +14,9 @@ import statistics
 from pagess.Análise_Estatística_Exploratória import pagina_analise_estatistica_exploratoria
 from pagess.Análise_Por_Grupos import pagina_analise_por_grupos
 from pagess.Anomalias import pagina_anomalias
-#st.set_page_config(layout='wide')
+from pagess.Relatório_das_Regiões import relatorio_regioes
+from pagess.Relatório_dos_Municípios import relatorio_municipios
+# st.set_page_config(layout= "centered")
 
 def pagina_inicial():
     st.title("ShapSom 🤖")
@@ -28,7 +30,7 @@ def pagina_inicial():
         st.download_button('Modelo', 'modelo', file_name=download_file, help='Modelo de planilha a ser enviada')
 
     file = st.file_uploader("Faça upload do seu arquivo", type=['csv'], help='Se já preencheu os dados na planilha modelo faça upload de um arquivo csv ou excel, ou faça o download do modelo e preencha com seus dados')
-        
+    
     if file:
         df = pd.read_csv(file, sep=',') if tipo == 'csv' else pd.read_excel(file)
         globals.original_database = df.copy()
@@ -40,7 +42,7 @@ def pagina_inicial():
             globals.current_database = globals.original_database
 
         globals.current_database = globals.current_database.dropna()
-        globals.current_database_name = file.name.split(".")[0]
+        globals.current_database_name =  file.name.split(".")[0]
 
         numeric_cols = list(globals.current_database.select_dtypes(include=['float64', 'int64']).columns)
         textual_cols = list(globals.current_database.select_dtypes(include=['object']).columns)
@@ -167,7 +169,7 @@ def pagina_inicial():
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3, tab4 = st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos", "Anomalias"])
+tab1, tab2, tab3, tab4, tab6, tab7 = st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos", "Anomalias", "Relatório das Regiões", "Relatório dos Municípios"])
 with tab1:
    pagina_inicial()
 with tab2:
@@ -176,3 +178,7 @@ with tab3:
     pagina_analise_por_grupos()
 with tab4:
     pagina_anomalias()
+with tab6:
+    relatorio_regioes()
+with tab7:
+    relatorio_municipios()

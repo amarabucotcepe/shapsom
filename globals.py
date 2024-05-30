@@ -21,3 +21,6 @@ shap_data = {}
 som_data = {}
 file_uploaded_start_flag = False
 som_chart = None
+crunched_df = None
+shape_results = {}
+current_list_labels = [] 

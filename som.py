@@ -5,7 +5,6 @@ import globals
 from shaps import make_shap
 import copy
 
-
 def rodar_algoritmo():
     som_data = globals.som_data
     input_values = []
@@ -50,7 +49,6 @@ def rodar_algoritmo():
         if(np.min(valor) < min):
             min = np.min(valor)
             
-
 
     
     globals.som_data['SHAP Original'] = np.zeros(len(globals.som_data))
