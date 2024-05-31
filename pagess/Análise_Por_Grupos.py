@@ -316,9 +316,57 @@ def pagina_analise_por_grupos():
                 #        st.write(f"- {item}")
                 #    gerarEspaco()
 
+        ##############################################################################
+        # FUNÇÕES AUXILIARES PARA AS SEÇÕES 2 E 5
+        def formatDf(df):
+            municipios = df[['Município']]
+            formated_df = df.drop(columns=df.columns[:3])
+            nums_columns = list(range(1, len(formated_df.columns) + 1))
+            formated_df.columns = nums_columns
+        
+            return formated_df, municipios
+            
+        def generate_heatmap(data, cmap):
+                largura, altura = data.shape
+                sns.set_theme()
+                plt.figure(figsize=(altura/9.15 ,largura/7)) 
+                heatmap =sns.heatmap(data,
+                    annot=False,
+                    cmap=cmap,
+                    square=True,
+                    #vmin=0, vmax=1, 
+                    cbar=True, cbar_kws={'orientation': 'vertical'})
+                
+                return heatmap
+        ###################################################################################
         def secao2():
             st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
-            st.text('(Explicar o que é o Heatmap e como está sendo feita a média e o desvio padrão deles)')
+            st.markdown('''Esta seção traz uma análise visual da base de dados, 
+                        fornecendo média e desvio padrão dos fatores disponibilizados para cada um dos municípios. 
+        
+                        Importante:
+            As linhas representam os municípios, que estão em ordem alfabética;
+            As colunas representam os fatores selecionados pelo usuário na base de dados;
+            A cor de cada quadrado indica a intensidade do fator naquele município.''')
+        
+            col1, col2 = st.columns(2)
+            with col1:
+                df_previa = globals.crunched_df.drop(columns=globals.crunched_df.columns[[0, 2]], axis=1)
+                crunched_df, a = formatDf(globals.crunched_df)
+                st.write("**Tabela 1 - Média:**")
+                st.dataframe(df_previa)
+                st.subheader('Heatmap 1')
+                heatmap1 = generate_heatmap(crunched_df, 'viridis')
+                st.pyplot(heatmap1.figure)
+            
+            with col2:
+                df_previa = globals.crunched_std.drop(columns=globals.crunched_std.columns[[0, 2]], axis=1)
+                crunched_std, a = formatDf(globals.crunched_std)
+                st.write("**Tabela 2 - Desvio Padrão:**")
+                st.dataframe(df_previa)
+                st.subheader('Heatmap 2')
+                heatmap2 = generate_heatmap(crunched_std, 'inferno')
+                st.pyplot(heatmap2.figure)
             
         def secao3():
             st.subheader('Seção 3 - Análise entre grupos')
@@ -434,6 +482,45 @@ def pagina_analise_por_grupos():
         def secao5():
             st.subheader('Seção 5 - Filtro de Triagem')
             st.text('Explicar como esse filtro está sendo aplicado e falar que ele também será aplicado na parte de anomalias')
+            col1, col2 = st.columns(2)
+            with col1:
+                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
+            with col2:
+                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
+        
+            def filtrar_dfs(media_df, std_df, minimo, maximo, nomes):
+                media_df_filtrado = media_df[(media_df.iloc[:, -1] >= (minimo/100)) & (media_df.iloc[:, -1] <= (maximo/100))]
+                std_df_filtrado = std_df.iloc[media_df_filtrado.index]
+                nomes_filtrado = nomes.iloc[media_df_filtrado.index]
+                return media_df_filtrado, std_df_filtrado, nomes_filtrado
+        
+            if val_min > val_max:
+                st.write("**O valor mínimo deve ser menor que o valor máximo**")
+            else:
+                botao = st.button("Filtrar", type='primary')
+        
+                if botao:
+                    crunched_df, municipios = formatDf(globals.crunched_df)
+                    crunched_std, a = formatDf(globals.crunched_std)
+                    df_filtrado, std_filtrado, municipios_filtrados = filtrar_dfs(crunched_df, crunched_std, val_min, val_max, municipios )
+                    if df_filtrado.empty:
+                        st.write("**Não há dados nesse intevalo de valores**")
+                    else:    
+                        with col1:
+                            df_previa = pd.concat([municipios_filtrados, df_filtrado], axis=1)
+                            st.write("**Tabela 1 - Média:**")
+                            st.dataframe(df_previa)
+                            st.subheader('Heatmap 1')
+                            heatmap1 = generate_heatmap(df_filtrado, 'viridis')
+                            st.pyplot(heatmap1.figure)
+                        
+                        with col2:
+                            df_previa = pd.concat([municipios_filtrados, std_filtrado], axis=1)
+                            st.write("**Tabela 2 - Desvio Padrão:**")
+                            st.dataframe(df_previa)
+                            st.subheader('Heatmap 2')
+                            heatmap2 = generate_heatmap(std_filtrado, 'inferno')
+                            st.pyplot(heatmap2.figure)
 
         st.title('Análise Por Grupos com SHAP/SOM')
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
