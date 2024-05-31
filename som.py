@@ -6,14 +6,13 @@ from shaps import make_shap
 import copy
 
 def rodar_algoritmo():
-    som_data = globals.som_data
     input_values = []
     for index, row in globals.crunched_df.iterrows():
         input_values.append(row[1:-1].values)
 
     make_shap(
-        som_data['Municípios'], list(globals.crunched_df.columns[1:-1]), np.array(input_values, dtype=float),
-        np.array(som_data['Nota']),
+        globals.som_data['Municípios'], list(globals.crunched_df.columns[1:-1]), np.array(input_values, dtype=float),
+        np.array(globals.som_data['Nota']),
         globals.use_shap,
         desc=f"Gerando gráficos para {globals.crunched_df.columns[-1]}"
     )
@@ -50,12 +49,12 @@ def rodar_algoritmo():
             min = np.min(valor)
             
 
+    globals.shapsom_data = globals.som_data.copy()
+    globals.shapsom_data['SHAP Original'] = np.zeros(len(globals.shapsom_data))
+    globals.shapsom_data['SHAP Normalizado'] = np.zeros(len(globals.shapsom_data))
     
-    globals.som_data['SHAP Original'] = np.zeros(len(globals.som_data))
-    globals.som_data['SHAP Normalizado'] = np.zeros(len(globals.som_data))
-    
-    globals.som_data['SHAP Original'] = globals.som_data['SHAP Original'].apply(lambda x: [x])
-    globals.som_data['SHAP Normalizado'] = globals.som_data['SHAP Normalizado'].apply(lambda x: [x])
+    globals.shapsom_data['SHAP Original'] = globals.shapsom_data['SHAP Original'].apply(lambda x: [x])
+    globals.shapsom_data['SHAP Normalizado'] = globals.shapsom_data['SHAP Normalizado'].apply(lambda x: [x])
     
     for i in range(len(globals.shap_explanations)):
         array_normalizado = []
@@ -68,12 +67,12 @@ def rodar_algoritmo():
             else:
                 array_normalizado.append(0)
         
-        globals.som_data['SHAP Original'][i] = globals.shap_explanations[i].values
-        globals.som_data['SHAP Normalizado'][i] = array_normalizado
+        globals.shapsom_data['SHAP Original'][i] = globals.shap_explanations[i].values
+        globals.shapsom_data['SHAP Normalizado'][i] = array_normalizado
     
-    resultado = globals.som_data.groupby('Grupo')['SHAP Normalizado'].apply(lambda x: [sum(i)/len(i) for i in zip(*x)])
+    resultado = globals.shapsom_data.groupby('Grupo')['SHAP Normalizado'].apply(lambda x: [sum(i)/len(i) for i in zip(*x)])
     
-    globals.som_data['SHAP Media Cluster'] = globals.som_data['Grupo'].map(resultado)
+    globals.shapsom_data['SHAP Media Cluster'] = globals.shapsom_data['Grupo'].map(resultado)
         
                
 def normalizar_entre_dois_valores(valor, min, max, a, b):

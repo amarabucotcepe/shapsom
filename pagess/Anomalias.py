@@ -62,5 +62,5 @@ def pagina_anomalias():
                 dist_df = pd.DataFrame({'Distância do centroide':pd.Series(distancias)})
                 df_aux = dist_df.join(df)
                 df_aux = df_aux.sort_values(by=['Distância do centroide'], ascending=False).head(df.shape[0]//porcentagem)
-                df_aux = df_aux.drop(['Cor'],axis=1).reset_index(drop=True)
+                df_aux = df_aux.drop(['Cor', 'Cor Central'],axis=1).reset_index(drop=True)
                 st.dataframe(df_aux, use_container_width=True)

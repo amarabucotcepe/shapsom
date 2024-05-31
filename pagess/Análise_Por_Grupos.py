@@ -329,7 +329,7 @@ def pagina_analise_por_grupos():
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias. Os mapas gerados pelas Redes SOM são topológicos, não geográficos, o que permite tratar diferentes entidades de forma justa e diligente, com base em suas semelhanças.<div>''', unsafe_allow_html=True)
             
             #st.text(globals.som_data)
-            tabela_df = globals.som_data
+            tabela_df = globals.shapsom_data.copy()
             tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
 
             
@@ -362,7 +362,7 @@ def pagina_analise_por_grupos():
         def secao4():
             #Criando as variáveis
             original_df = globals.crunched_df
-            df = globals.som_data
+            df = globals.shapsom_data
             max_grupo = df['Grupo'].max()
             df_expandido = df.assign(municipios=df['Municípios'].str.split(',')).explode('municipios').reset_index(drop=True)
             df_expandido = df_expandido.drop(columns=['Municípios', 'x', 'y'])
