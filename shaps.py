@@ -56,18 +56,8 @@ def make_shap(labels, variable_columns, x, y, use_shap, desc="Gerando gráficos 
     globals.shap_data['columns'] = globals.shap_columns
     globals.shap_data['explanations'] = globals.shap_explanations
     
-    # Salva os mapas um por um e exibe uma barrinha de progresso para o usuário
-    # if use_shap:
-    #     for i, exp in tqdm(enumerate(globals.shap_explanations), desc=desc, total=len(globals.shap_explanations)):
-    #         fig = plt.figure()
-    #         shap.waterfall_plot(exp, show=False)
-    #         plt.title(labels[i])
-    #         fig.set_size_inches(16, 8)
-    #         fig.subplots_adjust(left=0.4)
-    #         plt.close(fig)
-    #        # globals.shape_results[labels[i].split(" - ")[0]] = {}
-    #        # globals.shape_results[labels[i].split(" - ")[0]]['data'] = exp.data.copy()
-    #        # globals.shape_results[labels[i].split(" - ")[0]]['values'] = exp.values.copy()
-    #         globals.shap_results[labels[i]] = {}
-    #         globals.shap_results[labels[i]]['data'] = exp.data.copy()
-    #         globals.shap_results[labels[i]]['values'] = exp.values.copy()
+    if use_shap:
+        for i, exp in tqdm(enumerate(globals.shap_explanations), desc=desc, total=len(globals.shap_explanations)):
+            globals.shape_results[labels[i]] = {}
+            globals.shape_results[labels[i]]['data'] = exp.data.copy()
+            globals.shape_results[labels[i]]['values'] = exp.values.copy()
