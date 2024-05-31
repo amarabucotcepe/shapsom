@@ -52,6 +52,10 @@ def make_shap(labels, variable_columns, x, y, use_shap, desc="Gerando gráficos 
     explainer = shap.Explainer(model, x)
     globals.shap_explanations = [shap.Explanation(values=v, base_values=explainer.expected_value, feature_names=variable_columns) for v in explainer(x)]
 
+    globals.shap_data['labels'] = globals.shap_labels
+    globals.shap_data['columns'] = globals.shap_columns
+    globals.shap_data['explanations'] = globals.shap_explanations
+    
     # Salva os mapas um por um e exibe uma barrinha de progresso para o usuário
     # if use_shap:
     #     for i, exp in tqdm(enumerate(globals.shap_explanations), desc=desc, total=len(globals.shap_explanations)):
