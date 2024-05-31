@@ -316,9 +316,57 @@ def pagina_analise_por_grupos():
                 #        st.write(f"- {item}")
                 #    gerarEspaco()
 
+        ##############################################################################
+        # FUNÇÕES AUXILIARES PARA AS SEÇÕES 2 E 5
+        def formatDf(df):
+            municipios = df[['Município']]
+            formated_df = df.drop(columns=df.columns[:3])
+            nums_columns = list(range(1, len(formated_df.columns) + 1))
+            formated_df.columns = nums_columns
+        
+            return formated_df, municipios
+            
+        def generate_heatmap(data, cmap):
+                largura, altura = data.shape
+                sns.set_theme()
+                plt.figure(figsize=(altura/9.15 ,largura/7)) 
+                heatmap =sns.heatmap(data,
+                    annot=False,
+                    cmap=cmap,
+                    square=True,
+                    #vmin=0, vmax=1, 
+                    cbar=True, cbar_kws={'orientation': 'vertical'})
+                
+                return heatmap
+        ###################################################################################
         def secao2():
             st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
-            st.text('(Explicar o que é o Heatmap e como está sendo feita a média e o desvio padrão deles)')
+            st.markdown('''Esta seção traz uma análise visual da base de dados, 
+                        fornecendo média e desvio padrão dos fatores disponibilizados para cada um dos municípios. 
+        
+                        Importante:
+            As linhas representam os municípios, que estão em ordem alfabética;
+            As colunas representam os fatores selecionados pelo usuário na base de dados;
+            A cor de cada quadrado indica a intensidade do fator naquele município.''')
+        
+            col1, col2 = st.columns(2)
+            with col1:
+                df_previa = globals.crunched_df.drop(columns=globals.crunched_df.columns[[0, 2]], axis=1)
+                crunched_df, a = formatDf(globals.crunched_df)
+                st.write("**Tabela 1 - Média:**")
+                st.dataframe(df_previa)
+                st.subheader('Heatmap 1')
+                heatmap1 = generate_heatmap(crunched_df, 'viridis')
+                st.pyplot(heatmap1.figure)
+            
+            with col2:
+                df_previa = globals.crunched_std.drop(columns=globals.crunched_std.columns[[0, 2]], axis=1)
+                crunched_std, a = formatDf(globals.crunched_std)
+                st.write("**Tabela 2 - Desvio Padrão:**")
+                st.dataframe(df_previa)
+                st.subheader('Heatmap 2')
+                heatmap2 = generate_heatmap(crunched_std, 'inferno')
+                st.pyplot(heatmap2.figure)
             
         def secao3():
             st.subheader('Seção 3 - Análise entre grupos')
