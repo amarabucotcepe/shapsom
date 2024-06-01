@@ -325,12 +325,11 @@ def pagina_analise_por_grupos():
         ##############################################################################
         # FUNÇÕES AUXILIARES PARA AS SEÇÕES 2 E 5
         def formatDf(df):
-            municipios = df[['Município']]
-            formated_df = df.drop(columns=df.columns[:3])
+            formated_df = df.drop(columns=['Município'])
             nums_columns = list(range(1, len(formated_df.columns) + 1))
             formated_df.columns = nums_columns
         
-            return formated_df, municipios
+            return formated_df
             
         def generate_heatmap(data, cmap):
                 largura, altura = data.shape
@@ -340,8 +339,11 @@ def pagina_analise_por_grupos():
                     annot=False,
                     cmap=cmap,
                     square=True,
-                    #vmin=0, vmax=1, 
-                    cbar=True, cbar_kws={'orientation': 'vertical'})
+                    vmin=0,
+                    vmax = 1, 
+                    cbar_kws={'orientation': 'vertical'}
+                    
+                    )
                 
                 return heatmap
         ###################################################################################
@@ -357,21 +359,19 @@ def pagina_analise_por_grupos():
         
             col1, col2 = st.columns(2)
             with col1:
-                df_previa = globals.crunched_df.drop(columns=globals.crunched_df.columns[[0, 2]], axis=1)
-                crunched_df, a = formatDf(globals.crunched_df)
+                crunched_df = formatDf(globals.crunched_df)
                 st.write("**Tabela 1 - Média:**")
-                st.dataframe(df_previa)
+                st.dataframe(globals.crunched_df)
                 st.subheader('Heatmap 1')
-                heatmap1 = generate_heatmap(crunched_df, 'viridis')
+                heatmap1 = generate_heatmap(crunched_df, 'plasma')
                 st.pyplot(heatmap1.figure)
             
             with col2:
-                df_previa = globals.crunched_std.drop(columns=globals.crunched_std.columns[[0, 2]], axis=1)
-                crunched_std, a = formatDf(globals.crunched_std)
+                crunched_std = formatDf(globals.crunched_std)
                 st.write("**Tabela 2 - Desvio Padrão:**")
-                st.dataframe(df_previa)
+                st.dataframe(globals.crunched_std)
                 st.subheader('Heatmap 2')
-                heatmap2 = generate_heatmap(crunched_std, 'inferno')
+                heatmap2 = generate_heatmap(crunched_std, 'gray')
                 st.pyplot(heatmap2.figure)
             
         def secao3():
@@ -493,11 +493,10 @@ def pagina_analise_por_grupos():
             with col2:
                 val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
         
-            def filtrar_dfs(media_df, std_df, minimo, maximo, nomes):
-                media_df_filtrado = media_df[(media_df.iloc[:, -1] >= (minimo/100)) & (media_df.iloc[:, -1] <= (maximo/100))]
-                std_df_filtrado = std_df.iloc[media_df_filtrado.index]
-                nomes_filtrado = nomes.iloc[media_df_filtrado.index]
-                return media_df_filtrado, std_df_filtrado, nomes_filtrado
+            def filtrar_df(df, minimo, maximo):
+                df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
+                #std_df_filtrado = std_df.iloc[media_df_filtrado.index]
+                return df_filtrado
         
             if val_min > val_max:
                 st.write("**O valor mínimo deve ser menor que o valor máximo**")
@@ -505,34 +504,34 @@ def pagina_analise_por_grupos():
                 botao = st.button("Filtrar", type='primary')
         
                 if botao:
-                    crunched_df, municipios = formatDf(globals.crunched_df)
-                    crunched_std, a = formatDf(globals.crunched_std)
-                    df_filtrado, std_filtrado, municipios_filtrados = filtrar_dfs(crunched_df, crunched_std, val_min, val_max, municipios )
-                    if df_filtrado.empty:
+                    media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
+                    std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
+                    crunched_df = formatDf(media_df_filtrado)
+                    crunched_std = formatDf(std_filtrado)
+                    if media_df_filtrado.empty:
                         st.write("**Não há dados nesse intevalo de valores**")
                     else:    
                         with col1:
-                            df_previa = pd.concat([municipios_filtrados, df_filtrado], axis=1)
                             st.write("**Tabela 1 - Média:**")
-                            st.dataframe(df_previa)
+                            st.dataframe(media_df_filtrado)
                             st.subheader('Heatmap 1')
-                            heatmap1 = generate_heatmap(df_filtrado, 'viridis')
+                            heatmap1 = generate_heatmap(crunched_df, 'plasma')
                             st.pyplot(heatmap1.figure)
                         
                         with col2:
-                            df_previa = pd.concat([municipios_filtrados, std_filtrado], axis=1)
                             st.write("**Tabela 2 - Desvio Padrão:**")
-                            st.dataframe(df_previa)
+                            st.dataframe(std_filtrado)
                             st.subheader('Heatmap 2')
-                            heatmap2 = generate_heatmap(std_filtrado, 'inferno')
+                            heatmap2 = generate_heatmap(crunched_std, 'gray')
                             st.pyplot(heatmap2.figure)
 
         st.title('Análise Por Grupos com SHAP/SOM')
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
             try:
                 secao()
-            except:
+            except Exception as e:
                 st.subheader(f'Seção {i+1} - Erro')
+                st.write(f'Erro: {str(e)}')
 
 
     pagina_anomalias()
