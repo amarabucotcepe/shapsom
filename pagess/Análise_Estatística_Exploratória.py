@@ -8,7 +8,7 @@ import plotly.express as px
 
 import branca.colormap as cm
 from branca.colormap import linear
-
+from PIL import Image
 import folium
 import json
 from streamlit_folium import st_folium
@@ -26,17 +26,8 @@ import geopandas as gpd
 import os
 
 def pagina_analise_estatistica_exploratoria():
-    # Set page configuration
-    #st.set_page_config(layout='wide')
-
     st.title("Relatório 📊")
-    st.subheader("Análise de dados")
-
-    #title = st.text_input("Título do relatório")
-
-    # file = st.file_uploader("Faça upload do seu arquivo", type=['csv'])
-
-    # if file is not None:
+    st.subheader("Análise Estatística Exploratória")
 
     has_databases = True
     try:
@@ -49,8 +40,7 @@ def pagina_analise_estatistica_exploratoria():
         # st.write(df)
 
         df =  globals.current_database
-        st.info('Mapa da variável alvo', icon='🌎')
-        st.subheader('Mapa da variável alvo')
+        st.subheader('Mapa de Análise da Variável Alvo')
 
         def generate_map():
             # Convert the DataFrame to a GeoDataFrame
@@ -76,74 +66,45 @@ def pagina_analise_estatistica_exploratoria():
             else:
                 generate_map()
 
-        st.info(f'Município x {df.columns[-1]}', icon='🌎')
+        st.info('Figura 1 - Mapa Colorido Baseado na Variação de Valores da Variável Alvo.')
+        st.markdown('''A figura 1 apresenta uma análise geoespacial dos municípios do estado de Pernambuco. As diferentes tonalidades de cores no 
+                    mapa representam as variações nos níveis da variável de escolha. As áreas em tons mais escuros indicam um desempenho superior, 
+                    enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
+                    intervenções mais intensivas, ajudando a direcionar políticas públicas e recursos de forma mais eficiente.''')
+        st.divider()
 
         st.subheader('Análise Estatística')
-        # Calculate correlation
-        # dfmc = df.pivot_table(index=df.columns[0], values=df.columns[-1], aggfunc='mean')
+
         dfmc = df.groupby(df.columns[0])[df.columns[-1]].apply(lambda x: x.mode().iloc[0]).reset_index()
-        # dfm = df.pivot_table(index=df.columns[0], values=df.columns[3:], aggfunc='mean')
         dfm = df.groupby(df.columns[0])[df.columns[3:]].apply(lambda x: x.mode().iloc[0]).reset_index()
-
         dfmc[dfmc.columns[-1]] = dfmc[dfmc.columns[-1]].round(2)
-        # dfm = df.pivot_table(index=df.columns[0], values=df.columns[3:-1], aggfunc=['mean','std'])
-        # dfm.columns = dfm.iloc[0]
-        # dfm = dfm[1:]
-        # st.write(dfm.head(5))
 
-
-        container = st.container(border=True)
-        container.write("O gráfico abaixo mostra a distribuição da variável resposta por município. Permite visualizar Municípios com valores extremos e dispersão em torno da média.")
         st.markdown('Estatísticas')
-        st.dataframe(dfmc[dfmc.columns[-1]].describe().to_frame().T)
+        st.dataframe(dfmc[dfmc.columns[-1]].describe().to_frame().T, column_config={
+            'count': 'Contagem',
+            'mean': 'Média',
+            'std': 'Desvio Padrão',
+            'min': 'Mínimo',
+            '25%': '1° Quartil',
+            '50%': 'Mediana',
+            '75%': '3° Quartil',
+            'max': 'Máximo'
+        })
+        st.info('Tabela 1 - Estatísticas Descritivas da Variável Alvo')
+        st.markdown('''Esta tabela fornece um resumo estatístico descritivo da variável alvo para os municípios analisados. Os valores apresentados 
+                    incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
+                    (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios.''')
 
         st.divider()
 
-        fig = px.scatter(
-            dfmc.reset_index(),
-            x="Município",
-            y=dfmc.columns[-1],
-            # size=dfmc.columns[-1],
-            hover_name="Município",
-            color=dfmc.columns[-1],
-            color_continuous_scale='icefire_r',
-            size_max=60,
-        )
-
-        fig.update_layout(
-            autosize=False,
-            width=800,
-            height=500,
-            shapes=[dict(type="rect", xref="paper", yref="paper", x0=0, y0=0, x1=1, y1=1, line=dict(color="Grey", width=1))]
-        )
-
-        # Show the scatterplot in Streamlit
-        st.plotly_chart(fig, use_container_width=True)
-
-        st.info(f'Variáveis por Município x {dfmc.columns[-1]}', icon='🌎')
-
-        container = st.container(border=True)
-        container.write("O gráfico abaixo mostra a relação da variável explicativa com a variável resposta. Permite visualizar como se correlacionam.")
-        with st.expander('ajuda',expanded=False):
-            st.markdown('* $r = 1$:  correlação perfeita positiva, quanto maior o valor de uma variável, maior o valor da outra.')
-            st.markdown('* $r = 0$:  não há correlação, não importa o valor de uma variável, o valor da outra não é afetado.')
-            st.markdown('* $r = -1$:  correlação perfeita negativa, quanto maior o valor de uma variável, menor o valor da outra.')
-
-        corr = dfm[dfm.columns[3:-1]].corrwith(dfm[df.columns[-1]]).sort_values(ascending=False)
-
-        # Create a heatmap
-        plt.figure(figsize=(10,8))
-        sns.heatmap(corr.to_frame(), annot=True, cmap='coolwarm_r')
-
-        # Show the heatmap in Streamlit
-        st.pyplot(plt)
-
+        st.subheader('Gráfico de Dispersão')
+        st.markdown('O gráfico abaixo mostra a distribuição da variável escolhida por unicípio. Permite visualizar municípios com valores menores e a dispersão em torno de sua média.')
         variavel = st.selectbox('Selecione a variável', df.columns[3:-1])
         # Create a scatterplot of the penultimate column
         fig = px.scatter(
             dfm.reset_index(),
-            x=variavel,
-            y=dfmc.columns[-1],
+            y=variavel,
+            x=dfmc.columns[0],
             # size=dfmc.columns[-1],
             hover_name="Município",
             color=variavel,
@@ -152,46 +113,12 @@ def pagina_analise_estatistica_exploratoria():
 
         # Show the scatterplot in Streamlit
         st.plotly_chart(fig, use_container_width=True)
-
-        st.info('Correlações por Municipio', icon='⚔️')
-
-        #corr
-
-        # Create a heatmap
-        # fig = go.Figure(data=go.Heatmap(
-        #                 x=corr.index,
-        #                 y=['Correlation'],
-        #                 z=[corr.values],
-        #                 hoverongaps = False,
-        #                 colorscale='RdBu'))
-
-        # # Show the heatmap in Streamlit
-        # st.plotly_chart(fig)
-
-
-        with st.expander('Correlações por subunidade ⚔️',expanded=False):
-
-            # Calculate correlation
-            corr = df[df.columns[3:-1]].corrwith(df[df.columns[-1]]).sort_values(ascending=False)
-            # corr
-
-            # Create a heatmap
-            fig = go.Figure(data=go.Heatmap(
-                            z=corr.values,
-                            x=corr.index,
-                            y=['0'],
-                            hoverongaps = False,
-                            colorscale='Viridis'))
-
-            # Show the heatmap in Streamlit
-            st.plotly_chart(fig)
-
-            # Create a heatmap
-            plt.figure(figsize=(10,8))
-            sns.heatmap(corr.to_frame(), annot=True, cmap='coolwarm_r')
-
-            # Show the heatmap in Streamlit
-            st.pyplot(plt)
+        st.info('Gráfico 1 - Gráfico de Dispersão da Distribuição da Variável Selecionada por Município')
+        st.markdown('''O gráfico 1 faz parte de uma análise estatística mais ampla apresentada no relatório, que visa 
+                    explorar a variabilidade e o desempenho geral dos municípios. Ele permite identificar quais municípios
+                     apresentam desempenhos extremos, tanto positivos quanto negativos, e como os valores da nossa variável alvo estão dispersos
+                    em relação à media. Esta visualização facilita uma identificação mais superficial das áreas que necessitam de maior atenção e recursos.''')
+        st.divider()    
 
         st.subheader('Arvore de Decisão')
         # Define the features and the target
@@ -210,11 +137,15 @@ def pagina_analise_estatistica_exploratoria():
                                         index = X.columns,
                                         columns=['importance']).sort_values('importance', ascending=False)
 
-        st.info('Importância das variáveis', icon='📊')
-        # Display the feature importances in Streamlit
-        st.dataframe(feature_importances)
+        st.dataframe(feature_importances, column_config={
+            '': 'Variáveis',
+            'importance': 'Importância'
+        })
+        st.info('Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
+        st.markdown(''' Esta tabela lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. 
+                    A importância de uma variável indica quanto ela contribui para a decisão final do modelo. Valores mais altos de importância 
+                    sugerem que a variável tem um impacto maior na previsão do modelo.''')
 
-        st.info('Árvore de decisão', icon='🌲')
 
         # Create a larger figure
         fig, ax = plt.subplots(figsize=(20, 20))
@@ -224,3 +155,5 @@ def pagina_analise_estatistica_exploratoria():
 
         # Show the plot in Streamlit
         st.pyplot(fig)
+
+        st.info('Imagem 1 - Árvore de Decisão')

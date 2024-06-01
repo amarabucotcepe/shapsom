@@ -8,6 +8,7 @@ import plotly.express as px
 import numpy as np
 import branca.colormap as cm
 from branca.colormap import linear
+from PIL import Image
 import re
 import folium
 import json

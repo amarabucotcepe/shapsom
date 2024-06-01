@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
 import plotly.express as px
-
+from PIL import Image
 import branca.colormap as cm
 from branca.colormap import linear
 

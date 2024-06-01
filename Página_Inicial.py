@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
-from PIL import ImageFile
+from PIL import ImageFile, Image
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 import globals
 from som import rodar_algoritmo
@@ -16,20 +16,26 @@ from pagess.Análise_Por_Grupos import pagina_analise_por_grupos
 from pagess.Anomalias import pagina_anomalias
 from pagess.Relatório_das_Regiões import relatorio_regioes
 from pagess.Relatório_dos_Municípios import relatorio_municipios
-# st.set_page_config(layout= "centered")
+
+
+imagem = Image.open('pixelcut-export.png')
+st.image(imagem, use_column_width=True)
 
 def pagina_inicial():
-    st.title("ShapSom 🤖")
-    st.subheader("Análise de agrupamento de dados")
-    title = st.text_input("Título do relatório", help='Escolha o título do relatório')
-    tipo = st.radio('Tipo de arquivo',['csv','excel'], help='Escolha o tipo de arquivo. csv: separado por vírgula, excel: planilha excel')
+    
+
+    st.title("Relatório para Suporte às Auditorias do Tribunal de Contas do Estado de Pernambuco")
+    st.subheader("Inserção de Dados e Parametrizações.")
+    title = st.text_input("Informe o nome do relatório a ser gerado", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
+    tipo = st.radio('Escolha um tipo de arquivo. Os tipos de arquivo suportados para upload são CSV e Excel.',['csv','excel'], help='CSV (Comma-Separated Values): Este é um formato de arquivo simples que usa uma vírgula para separar os valores. Excel: Este é um formato de planilha criado pela Microsoft. Os arquivos Excel podem conter dados em várias planilhas, além de permitir a inclusão de gráficos, fórmulas e outras funcionalidades avançadas. ')
+    st.markdown('Atente-se a como sua planilha está organizada! Tente deixá-la no formato do modelo padrão.')
 
     download_file = 'modelo.csv' if tipo == 'csv' else 'modelo.xslx'
 
-    with st.expander("Precisa do modelo?", expanded=False):
+    with st.expander("Gostaria de baixar o modelo padrão de planilha?", expanded=False):
         st.download_button('Modelo', 'modelo', file_name=download_file, help='Modelo de planilha a ser enviada')
 
-    file = st.file_uploader("Faça upload do seu arquivo", type=['csv'], help='Se já preencheu os dados na planilha modelo faça upload de um arquivo csv ou excel, ou faça o download do modelo e preencha com seus dados')
+    file = st.file_uploader("Faça upload da sua planilha", type=['csv'], help='Caso sua planilha já esteja no mesmo formato do modelo (ou seja, com as colunas semelhantes), faça o upload dela. Caso contrário, faça o download da planilha modelo e preencha com seus dados.')
     
     if file:
         df = pd.read_csv(file, sep=',') if tipo == 'csv' else pd.read_excel(file)
@@ -52,14 +58,14 @@ def pagina_inicial():
         with st.expander("Escolher colunas", expanded=False):
             col1, col2, col3 = st.columns(3)
             with col1:
-                globals.current_label_columns = st.multiselect("Nome", textual_cols, default=[textual_cols[0]], max_selections=1)
+                globals.current_label_columns = st.multiselect("Nome", textual_cols, default=[textual_cols[0]], max_selections=1, help='Selecione a coluna que será usada como o identificador principal do conjunto de dados. Esta coluna geralmente contém valores únicos, como nomes de municípios. Por padrão, é a primeira coluna da sua planilha.')
             with col2:
-                globals.current_input_columns = st.multiselect("Entradas", numeric_cols, default=numeric_cols[:-1])
+                globals.current_input_columns = st.multiselect("Entradas", numeric_cols, default=numeric_cols[:-1], help='As colunas marcadas como "Entrada" são aquelas que contêm as variáveis independentes. Estes são os dados que serão usados para analisar o valor de saída.')
             with col3:
-                globals.current_output_columns = st.multiselect("Saída", numeric_cols, default=[numeric_cols[-1]], max_selections=1)
+                globals.current_output_columns = st.multiselect("Saída", numeric_cols, default=[numeric_cols[-1]], max_selections=1, help='A coluna marcada como "Saída" contém a variável dependente ou o valor que se deseja prever ou analisar. Esta coluna representa o resultado que é influenciado pelos dados das colunas de entrada. Por padrão, deve ser a última coluna da sua planilha.')
 
-        st.info("Caso não queira modificar as colunas selecionadas por padrão, clique no botão 'Pronto'")
-        choose_columns = st.button("Pronto")
+        st.info("Caso não queira modificar as colunas selecionadas por padrão, clique no botão 'Confirmar Colunas'")
+        choose_columns = st.button("Confirmar Colunas")
         if choose_columns:
             globals.som_chart = None
             globals.file_uploaded_start_flag = True
@@ -100,7 +106,8 @@ def pagina_inicial():
         else:
             globals.som = st.altair_chart(globals.som_chart, use_container_width=True)
 
-        with st.expander("Parâmetros SOM", expanded=False):
+        with st.expander("Caso deseje modificar o mapa SOM acima, clique aqui. Caso contrário, clique em Iniciar Análise.", expanded=False):
+            st.markdown('Essa é uma opção avançada que acabará modificando a estruturação do mapa que foi gerado acima. Leia as instruções sobre cada parâmetro e ajuste conforme sua vontade.')
             globals.sigma = st.slider("Sigma", min_value=1, max_value=10, value=9, help="A largura da vizinhança inicial no mapa SOM. Controla a extensão das alterações que ocorrem durante o treinamento. Um valor alto significa que mais neurônios serão influenciados durante o treinamento inicial, enquanto um valor baixo resultará em um ajuste mais fino.")
             globals.size = st.slider("Tamanho do mapa", min_value=5, max_value=50, value=30, help="O tamanho do mapa SOM, especificado pelo número total de neurônios (unidades). Mapas maiores podem representar características complexas com maior precisão, mas também requerem mais tempo de treinamento.")
             globals.lr = st.slider("Taxa de aprendizado", min_value=-5.0, max_value=-1.0, value=-3.0, step=0.25, help="Taxa de aprendizado inicial. Controla a velocidade de adaptação do mapa durante o treinamento. Valores muito altos podem levar a uma convergência instável, enquanto valores muito baixos podem resultar em um treinamento lento.")
@@ -158,9 +165,9 @@ def pagina_inicial():
                 globals.som.altair_chart(globals.som_chart, use_container_width=True)
         
         global use_shap
-        globals.use_shap = st.checkbox("Criar SHAP", help='Selecione para obter análise completa dos dados')
+        globals.use_shap = st.checkbox("Incluir Análise Individual dos Municípios", help='Selecione para obter, ao fim da execução, uma análise completa dos municípios de sua escolha individualmente')
 
-        submit_button = st.button('Executar')
+        submit_button = st.button('Iniciar Análise')
         
         if submit_button:
             st.dataframe(selected_df)
@@ -169,7 +176,7 @@ def pagina_inicial():
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3, tab4, tab6, tab7 = st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos", "Anomalias", "Relatório das Regiões", "Relatório dos Municípios"])
+tab1, tab2, tab3, tab4, tab6, tab7= st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos", "Anomalias", 'Relatório de Regiões', 'Relatório de Municípios'])
 with tab1:
    pagina_inicial()
 with tab2:
@@ -179,6 +186,6 @@ with tab3:
 with tab4:
     pagina_anomalias()
 with tab6:
-    relatorio_regioes()
+     relatorio_regioes()
 with tab7:
-    relatorio_municipios()
+     relatorio_municipios()

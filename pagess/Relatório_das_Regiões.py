@@ -12,11 +12,7 @@ from my_utils import add_cabecalho
 html_table = ''
 
 def relatorio_regioes():
-    secao6()
-    
-    imagem = Image.open('cabecalho.jpeg')
-    st.image(imagem, use_column_width=True)
-    
+    secao6()    
     st.title('Relatório das Regiões 🗺️')
 
     with st.expander("Relatório", expanded=True):
