@@ -31,6 +31,11 @@ import os
 
 import plotly.graph_objects as go
 
+from pagess.Análise_Estatística_Exploratória import pagina_analise_estatistica_exploratoria
+from pagess.Anomalias import pagina_anomalias
+from pagess.Relatório_das_Regiões import relatorio_regioes
+from pagess.Relatório_dos_Municípios import relatorio_municipios
+
 # Set page configuration
 #st.set_page_config(layout='wide')
 
@@ -528,3 +533,8 @@ def pagina_analise_por_grupos():
                 secao()
             except:
                 st.subheader(f'Seção {i+1} - Erro')
+
+
+    pagina_anomalias()
+    relatorio_regioes()
+    relatorio_municipios()

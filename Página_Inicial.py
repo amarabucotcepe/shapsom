@@ -179,16 +179,10 @@ def pagina_inicial():
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3, tab4, tab6, tab7= st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos", "Anomalias", 'Relatório de Regiões', 'Relatório de Municípios'])
+tab1, tab2, tab3= st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos"])
 with tab1:
    pagina_inicial()
 with tab2:
    pagina_analise_estatistica_exploratoria()
 with tab3:
     pagina_analise_por_grupos()
-with tab4:
-    pagina_anomalias()
-with tab6:
-     relatorio_regioes()
-with tab7:
-     relatorio_municipios()
