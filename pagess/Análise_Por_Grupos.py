@@ -363,7 +363,7 @@ def pagina_analise_por_grupos():
                 st.write("**Tabela 1 - Média:**")
                 st.dataframe(globals.crunched_df)
                 st.subheader('Heatmap 1')
-                heatmap1 = generate_heatmap(crunched_df, 'plasma')
+                heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                 st.pyplot(heatmap1.figure)
             
             with col2:
@@ -515,7 +515,7 @@ def pagina_analise_por_grupos():
                             st.write("**Tabela 1 - Média:**")
                             st.dataframe(media_df_filtrado)
                             st.subheader('Heatmap 1')
-                            heatmap1 = generate_heatmap(crunched_df, 'plasma')
+                            heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                             st.pyplot(heatmap1.figure)
                         
                         with col2:
