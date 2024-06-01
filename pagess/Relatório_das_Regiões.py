@@ -13,7 +13,7 @@ html_table = ''
 
 def relatorio_regioes():
     secao6()    
-    st.title('Relatório das Regiões 🗺️')
+    st.subheader('Seção 7Relatório das Regiões 🗺️')
 
     with st.expander("Relatório", expanded=True):
         # Ler o PDF

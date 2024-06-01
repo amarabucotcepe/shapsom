@@ -27,7 +27,7 @@ import plotly.graph_objects as go
 #st.set_page_config(layout='wide')
 
 def pagina_anomalias():
-    st.title('Seção de Anomalias')
+    st.subheader('Seção 6 - Anomalias')
     st.write("""A análise de anomalias foi conduzida utilizando um Mapa Auto-Organizável (SOM) para identificar pontos de dados que se desviam significativamente do padrão observado.
     Com as coordenadas dos pontos no SOM, o centroide do mapa foi calculado. Este centroide é determinado utilizando a mediana das coordenadas x e y de todos os pontos, o que fornece uma medida menos sensível a outliers em comparação com a média. Então, são calculadas as distâncias dos pontos para o centroide do mapa.
     Pontos que apresentaram distâncias significativamente maiores em relação ao centroide foram identificados como anômalos. Estes pontos fora do cluster principal sugerem comportamentos ou características discrepantes dos dados normais, destacando-se por estarem afastados do padrão usual.""")

@@ -17,7 +17,7 @@ global shap_columns
 global cluster_dict
 
 def relatorio_municipios():
-    st.title('Relatório dos Municípios 🏙️')
+    st.subheader('Seção 8 - Relatório Individual dos Municípios 🏙️')
 
     list_all_labels = [m for m in globals.shape_results.keys()]
 
