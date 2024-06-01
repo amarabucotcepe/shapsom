@@ -372,10 +372,9 @@ def pagina_analise_por_grupos():
         def secao3():
             st.subheader('Seção 3 - Análise entre grupos')
         
-            st.markdown('''<div max-width: '70%'>Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
-                    
+            st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
-            "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias. Os mapas gerados pelas Redes SOM são topológicos, não geográficos, o que permite tratar diferentes entidades de forma justa e diligente, com base em suas semelhanças.<div>''', unsafe_allow_html=True)
+            "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias. Os mapas gerados pelas Redes SOM são topológicos, não geográficos, o que permite tratar diferentes entidades de forma justa e diligente, com base em suas semelhanças.''')
             
             #st.text(globals.som_data)
             tabela_df = globals.shapsom_data.copy()
@@ -465,9 +464,9 @@ def pagina_analise_por_grupos():
                         values_range = np.linspace(0, 1, 10)
 
                         # Plot the map and apply the custom colormap
-                        m = gdf.explore(column=grupo_df.columns[2], cmap=custom_cmap, vmin=0, vmax=1)
+                        m = gdf.explore(column=grupo_df.columns[2], cmap=custom_cmap, vmin=0, vmax=1, fitbounds="locations", map_kwrds={'scrollWheelZoom': 4})
 
-                        components.html(m._repr_html_(), height=600)
+                        components.html(m._repr_html_(), height=400)
 
                         outfp = f"mapa{i}.html"
 
@@ -476,7 +475,7 @@ def pagina_analise_por_grupos():
                     with st.spinner('Gerando mapa...'):
                         if os.path.exists(f'mapa{i}.html'):
                             m_repr_html_ = open(f'mapa{i}.html').read()
-                            components.html(m_repr_html_, height=600)
+                            components.html(m_repr_html_, height=400)
                         else:
                             generate_map()
 

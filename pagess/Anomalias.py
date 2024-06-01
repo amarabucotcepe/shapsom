@@ -36,31 +36,35 @@ def pagina_anomalias():
     try:
         has_databases = has_databases and globals.som_chart is not None
         has_databases = has_databases and globals.som is not None
+        has_databases = has_databases and globals.som_data is not None
     except:
         has_databases = False
     
     st.divider()
-    if not has_databases:
+    try:
+        if not has_databases:
+            st.write("Nenhum dataset foi carregado. Por favor, carregue um dataset e tente novamente.")
+        else:
+            globals.som = st.altair_chart(globals.som_chart, use_container_width=True)
+            df = globals.som_data
+            med_x = df['x'].median()
+            med_y = df['y'].median()
+            st.write(f"O centroide do está localizado em: x = {med_x} e y = {med_y}")
+            globals.porcentagem = st.slider("Porcentagem", min_value=1, max_value=100, step=1, value=10, help="Porcentagem de anomalias esperadas. Por exemplo, se o valor for 10, o algoritmo irá mostrar 10% dos dados como anomalias.")
+            get_anomalies = st.button("Obter Anomalias")
+            if get_anomalies:
+                porcentagem=10
+                distancias = {}
+                with st.spinner('Calculando distâncias...'):
+                    for i in range(df.shape[0]):
+                        x = df['x'][i]
+                        y = df['y'][i]
+                        dist = math.sqrt(math.pow(x-med_x,2)+math.pow(y-med_y,2))
+                        distancias[i] = dist
+                    dist_df = pd.DataFrame({'Distância do centroide':pd.Series(distancias)})
+                    df_aux = dist_df.join(df)
+                    df_aux = df_aux.sort_values(by=['Distância do centroide'], ascending=False).head(df.shape[0]//porcentagem)
+                    df_aux = df_aux.drop(['Cor', 'Cor Central'],axis=1).reset_index(drop=True)
+                    st.dataframe(df_aux, use_container_width=True)
+    except:
         st.write("Nenhum dataset foi carregado. Por favor, carregue um dataset e tente novamente.")
-    else:
-        globals.som = st.altair_chart(globals.som_chart, use_container_width=True)
-        df = globals.som_data
-        med_x = df['x'].median()
-        med_y = df['y'].median()
-        st.write(f"O centroide do está localizado em: x = {med_x} e y = {med_y}")
-        globals.porcentagem = st.slider("Porcentagem", min_value=1, max_value=100, step=1, value=10, help="Porcentagem de anomalias esperadas. Por exemplo, se o valor for 10, o algoritmo irá mostrar 10% dos dados como anomalias.")
-        get_anomalies = st.button("Obter Anomalias")
-        if get_anomalies:
-            porcentagem=10
-            distancias = {}
-            with st.spinner('Calculando distâncias...'):
-                for i in range(df.shape[0]):
-                    x = df['x'][i]
-                    y = df['y'][i]
-                    dist = math.sqrt(math.pow(x-med_x,2)+math.pow(y-med_y,2))
-                    distancias[i] = dist
-                dist_df = pd.DataFrame({'Distância do centroide':pd.Series(distancias)})
-                df_aux = dist_df.join(df)
-                df_aux = df_aux.sort_values(by=['Distância do centroide'], ascending=False).head(df.shape[0]//porcentagem)
-                df_aux = df_aux.drop(['Cor', 'Cor Central'],axis=1).reset_index(drop=True)
-                st.dataframe(df_aux, use_container_width=True)

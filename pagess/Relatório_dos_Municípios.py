@@ -25,7 +25,7 @@ def relatorio_municipios():
         st.subheader("Selecione os Municípios")
         list_selected_labels = st.multiselect("Municípios", list_all_labels, help='Selecione os municípios para gerar os relatórios individuais de cada um deles', key="my_multiselect")
         use_mark_all = st.checkbox("Selecionar Todos", help="Selecione para marcar todos os municípios")
-        st.info('Para usar essa funcionalidade é necessário que a opção Criar SHAP esteja Ativada.')
+        st.info('Para usar essa funcionalidade é necessário que a opção "Incluir Análise Individual dos Municípios" esteja Ativada.')
         button = st.form_submit_button('Executar')
 
     if button:

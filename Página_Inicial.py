@@ -21,13 +21,16 @@ from pagess.Relatório_dos_Municípios import relatorio_municipios
 imagem = Image.open('pixelcut-export.png')
 st.image(imagem, use_column_width=True)
 
+globals.table_list = []
+globals.graphic_list = []
+globals.img_list = []
+
 def pagina_inicial():
     
-
     st.title("Relatório para Suporte às Auditorias do Tribunal de Contas do Estado de Pernambuco")
     st.subheader("Inserção de Dados e Parametrizações.")
     title = st.text_input("Informe o nome do relatório a ser gerado", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
-    tipo = st.radio('Escolha um tipo de arquivo. Os tipos de arquivo suportados para upload são CSV e Excel.',['csv','excel'], help='CSV (Comma-Separated Values): Este é um formato de arquivo simples que usa uma vírgula para separar os valores. Excel: Este é um formato de planilha criado pela Microsoft. Os arquivos Excel podem conter dados em várias planilhas, além de permitir a inclusão de gráficos, fórmulas e outras funcionalidades avançadas. ')
+    tipo = st.radio('Escolha um tipo de arquivo. Os tipos de arquivo suportados para upload são CSV e Excel.',['CSV','Excel'], help='CSV (Comma-Separated Values): Este é um formato de arquivo simples que usa uma vírgula para separar os valores. Excel: Este é um formato de planilha criado pela Microsoft. Os arquivos Excel podem conter dados em várias planilhas, além de permitir a inclusão de gráficos, fórmulas e outras funcionalidades avançadas. ')
     st.markdown('Atente-se a como sua planilha está organizada! Tente deixá-la no formato do modelo padrão.')
 
     download_file = 'modelo.csv' if tipo == 'csv' else 'modelo.xslx'
@@ -38,7 +41,7 @@ def pagina_inicial():
     file = st.file_uploader("Faça upload da sua planilha", type=['csv'], help='Caso sua planilha já esteja no mesmo formato do modelo (ou seja, com as colunas semelhantes), faça o upload dela. Caso contrário, faça o download da planilha modelo e preencha com seus dados.')
     
     if file:
-        df = pd.read_csv(file, sep=',') if tipo == 'csv' else pd.read_excel(file)
+        df = pd.read_csv(file, sep=',') if tipo == 'CSV' else pd.read_excel(file)
         globals.original_database = df.copy()
 
         if(verificarColunaDesc(globals.original_database)):

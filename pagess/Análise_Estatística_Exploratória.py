@@ -51,9 +51,9 @@ def pagina_analise_estatistica_exploratoria():
 
             df[df.columns[-1]] = df[df.columns[-1]].round(2)
 
-            m = gdf.explore(df.columns[-1], cmap='RdBu')
+            m = gdf.explore(df.columns[-1], cmap='RdBu', fitbounds="locations")
 
-            components.html(m._repr_html_(), height=600)
+            components.html(m._repr_html_(), height=400)
 
             outfp = r"mapa.html"
 
@@ -66,7 +66,8 @@ def pagina_analise_estatistica_exploratoria():
             else:
                 generate_map()
 
-        st.info('Figura 1 - Mapa Colorido Baseado na Variação de Valores da Variável Alvo.')
+        globals.img_list.append('fig1')
+        st.info(f'Figura {len(globals.img_list)} - Mapa Colorido Baseado na Variação de Valores da Variável Alvo.')
         st.markdown('''A figura 1 apresenta uma análise geoespacial dos municípios do estado de Pernambuco. As diferentes tonalidades de cores no 
                     mapa representam as variações nos níveis da variável de escolha. As áreas em tons mais escuros indicam um desempenho superior, 
                     enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
@@ -90,7 +91,9 @@ def pagina_analise_estatistica_exploratoria():
             '75%': '3° Quartil',
             'max': 'Máximo'
         })
-        st.info('Tabela 1 - Estatísticas Descritivas da Variável Alvo')
+
+        globals.table_list.append('table1')
+        st.info(f'Tabela {len(globals.table_list)} - Estatísticas Descritivas da Variável Alvo')
         st.markdown('''Esta tabela fornece um resumo estatístico descritivo da variável alvo para os municípios analisados. Os valores apresentados 
                     incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
                     (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios.''')
@@ -113,7 +116,7 @@ def pagina_analise_estatistica_exploratoria():
 
         # Show the scatterplot in Streamlit
         st.plotly_chart(fig, use_container_width=True)
-        st.info('Gráfico 1 - Gráfico de Dispersão da Distribuição da Variável Selecionada por Município')
+        st. info('Gráfico 1 - Gráfico de Dispersão da Distribuição da Variável Selecionada por Município')
         st.markdown('''O gráfico 1 faz parte de uma análise estatística mais ampla apresentada no relatório, que visa 
                     explorar a variabilidade e o desempenho geral dos municípios. Ele permite identificar quais municípios
                      apresentam desempenhos extremos, tanto positivos quanto negativos, e como os valores da nossa variável alvo estão dispersos
