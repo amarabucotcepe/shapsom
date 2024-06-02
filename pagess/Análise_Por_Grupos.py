@@ -349,13 +349,18 @@ def pagina_analise_por_grupos():
         ###################################################################################
         def secao2():
             st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
-            st.markdown('''Esta seção traz uma análise visual da base de dados, 
-                        fornecendo média e desvio padrão dos fatores disponibilizados para cada um dos municípios. 
-        
-                        Importante:
-            As linhas representam os municípios, que estão em ordem alfabética;
-            As colunas representam os fatores selecionados pelo usuário na base de dados;
-            A cor de cada quadrado indica a intensidade do fator naquele município.''')
+            st.markdown('''Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média  
+                        (*Heatmap 1*) e desvio padrão (*Heatmap 2*) dos fatores disponibilizados para cada um dos municípios.  
+                        Um **mapa de calor** (*heatmap*) é uma visualização gráfica que usa cores para representar a intensidade dos valores
+                        em uma matriz de dados. Cada célula da matriz é colorida de acordo com seu valor, facilitando a identificação de 
+                        padrões, tendências e anomalias nos dados.  
+                        **Média**: É a soma de todos os valores de um conjunto dividida pelo número de valores. 
+                        Representa o valor médio  
+                        **Desvio padrão**: Mede a dispersão dos valores em relação à média. Mostra o quanto os valores variam da média.
+                
+        Importante:
+        As linhas representam os municípios, que estão em ordem alfabética;
+        As colunas representam os fatores selecionados pelo usuário na base de dados;''')
         
             col1, col2 = st.columns(2)
             with col1:
@@ -486,20 +491,30 @@ def pagina_analise_por_grupos():
 
         def secao5():
             st.subheader('Seção 5 - Filtro de Triagem')
-            st.text('Explicar como esse filtro está sendo aplicado e falar que ele também será aplicado na parte de anomalias')
+            st.markdown('''Esta seção, assim como na seção 2, traz uma análise vizual da base de dados, porém agora em uma fatia dos dados
+                        escolida pelo usuário.  
+                        Essa vizualização é útil para analizar de forma mais detalhada elementos de interesse da base de dados.
+                
+            Como essa seção funciona:
+        Ela usa os valores forneceidos pelo usuário nos campos abaixo para filtrar 
+        a última coluna da base (saída), exibindo as tabelas e mapas de calor para 
+        o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
+        de valores fornecido pelo usuário.''')
+            
             col1, col2 = st.columns(2)
             with col1:
-                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
+                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número")
             with col2:
-                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
+                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número")
         
             def filtrar_df(df, minimo, maximo):
                 df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
-                #std_df_filtrado = std_df.iloc[media_df_filtrado.index]
                 return df_filtrado
         
             if val_min > val_max:
                 st.write("**O valor mínimo deve ser menor que o valor máximo**")
+            elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
+                st.write("**Os valores devem estar entre 0 e 100**")
             else:
                 botao = st.button("Filtrar", type='primary')
         
