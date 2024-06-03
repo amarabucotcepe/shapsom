@@ -20,6 +20,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
 import matplotlib.pyplot as plt
 import globals
+from streamlit_javascript import st_javascript
 
 import unicodedata
 from datetime import datetime
@@ -56,7 +57,15 @@ def pagina_analise_por_grupos():
                 os.remove(filepath)
                 
         def secao1():
-            
+
+            st_theme = st_javascript("""window.getComputedStyle(window.parent.document.getElementsByClassName("stApp")[0]).getPropertyValue("color-scheme")""")
+
+            rectangleColor = '#CCCCCC'
+            if(st_theme=='light'):
+                rectangleColor = '#CCCCCC'
+            else:
+                rectangleColor = '#444444'
+                        
             def verificarColunaDesc(database):
                 nStrings = 0
                 for i in range(database.shape[1]):
@@ -247,7 +256,7 @@ def pagina_analise_por_grupos():
 
             def gerarRetangulo(texto):
                 st.markdown(
-                f'<div style="background-color: #CCCCCC; border: 2px solid #808080; border-radius: 5px; padding: 10px">{texto}</div>',
+                f'<div style="background-color: {rectangleColor}; border: 2px solid #808080; border-radius: 5px; padding: 10px">{texto}</div>',
                 unsafe_allow_html=True
             )
                 
@@ -267,19 +276,22 @@ def pagina_analise_por_grupos():
                 st.write(texto1)
                 st.write(texto2)
 
-                custom_css = """
+                custom_css = f"""
                 
                 <style>
-                thead th {
-                    background-color: #CCCCCC;
+                thead th {{
+                    background-color: {rectangleColor};
                     color: white;
-                }
+                }}
                 </style>
                 """
                 st.markdown(custom_css, unsafe_allow_html=True)
 
                 if( globals.current_database is not None):
                     st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+
+                gerarEspaco()
+                st.info(f'Tabela 1 - Dicionário de dados do arquivo de entrada')
 
                 gerarEspaco()
                 st.write('#### 1.2 Parâmetros de Treinamento')
