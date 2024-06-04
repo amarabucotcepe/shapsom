@@ -110,7 +110,7 @@ def pagina_analise_estatistica_exploratoria():
         st.divider()
 
         st.subheader('Gráfico de Dispersão')
-        st.markdown('O gráfico abaixo mostra a distribuição da variável escolhida por unicípio. Permite visualizar municípios com valores menores e a dispersão em torno de sua média.')
+        st.markdown('O gráfico abaixo mostra a distribuição da variável escolhida por município. Permite visualizar municípios com valores menores e a dispersão em torno de sua média.')
         variavel = st.selectbox('Selecione a variável', df.columns[3:-1])
         # Create a scatterplot of the penultimate column
         fig = px.scatter(

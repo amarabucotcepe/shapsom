@@ -57,7 +57,7 @@ def pagina_inicial():
         textual_cols = list(globals.current_database.select_dtypes(include=['object']).columns)
         st.divider()
 
-        st.info("Caso deseje modificar a escolha de colunas padrões, clique na opção abaixo:")
+        st.markdown("Caso deseje modificar a escolha de colunas padrões, clique na opção abaixo:")
         with st.expander("Escolher colunas", expanded=False):
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -67,7 +67,7 @@ def pagina_inicial():
             with col3:
                 globals.current_output_columns = st.multiselect("Saída", numeric_cols, default=[numeric_cols[-1]], max_selections=1, help='A coluna marcada como "Saída" contém a variável dependente ou o valor que se deseja prever ou analisar. Esta coluna representa o resultado que é influenciado pelos dados das colunas de entrada. Por padrão, deve ser a última coluna da sua planilha.')
 
-        st.info("Caso não queira modificar as colunas selecionadas por padrão, clique no botão 'Confirmar Colunas'")
+        st.markdown("Caso não queira modificar as colunas selecionadas por padrão, clique no botão 'Confirmar Colunas'")
         choose_columns = st.button("Confirmar Colunas")
         if choose_columns:
             globals.som_chart = None
@@ -109,7 +109,8 @@ def pagina_inicial():
         else:
             globals.som = st.altair_chart(globals.som_chart, use_container_width=True)
 
-        with st.expander("Caso deseje modificar o mapa SOM acima, clique aqui. Caso contrário, clique em Iniciar Análise.", expanded=False):
+        st.text('Caso deseje modificar os parâmetros da criação do mapa SOM acima, clique para modificar os parâmetros.')
+        with st.expander("Modificar Parâmetros do SOM", expanded=False):
             st.markdown('Essa é uma opção avançada que acabará modificando a estruturação do mapa que foi gerado acima. Leia as instruções sobre cada parâmetro e ajuste conforme sua vontade.')
             globals.sigma = st.slider("Sigma", min_value=1, max_value=10, value=9, help="A largura da vizinhança inicial no mapa SOM. Controla a extensão das alterações que ocorrem durante o treinamento. Um valor alto significa que mais neurônios serão influenciados durante o treinamento inicial, enquanto um valor baixo resultará em um ajuste mais fino.")
             globals.size = st.slider("Tamanho do mapa", min_value=5, max_value=50, value=30, help="O tamanho do mapa SOM, especificado pelo número total de neurônios (unidades). Mapas maiores podem representar características complexas com maior precisão, mas também requerem mais tempo de treinamento.")
@@ -173,7 +174,7 @@ def pagina_inicial():
         submit_button = st.button('Iniciar Análise')
         
         if submit_button:
-            st.info('Programa Executado! Siga para a seção de Análise Estatística Exploratória localizada no começo da aplicação.')
+            st.warning('Agrupamentos realizados! Siga para a seção de Análise Estatística Exploratória (Vide o menu a esquerda).')
             rodar_algoritmo()
     else:
         globals.file_uploaded_start_flag = False

@@ -127,7 +127,8 @@ def pagina_analise_por_grupos():
                     else:
                         textoFaltantes += '.'
 
-                texto2 = textoFaltantes+ ' A seguir, na tabela 1, apresentamos o dicionário de dados. É importante notar que colunas com texto ou aquelas que foram ocultadas durante a criação do mapa não foram incluídas na análise.'
+                texto1 = texto1 + ' ' + textoFaltantes
+                texto2 = 'A seguir, na tabela 1, apresentamos o dicionário de dados. É importante notar que colunas com texto ou aquelas que foram ocultadas durante a criação do mapa não foram incluídas na análise.'
 
                 # Dicionário de dados
 
@@ -302,7 +303,7 @@ def pagina_analise_por_grupos():
                 gerarEspaco()
 
                 globals.table_list.append('table3')
-                st.info(f'Tabela {len(globals.table_list)} - Dados de entrada')
+                st.info(f'Tabela {len(globals.table_list)} - Dicionário de Dados')
 
                 st.write('#### 1.2 Parâmetros de Treinamento')
                 gerarEspaco()
@@ -373,8 +374,8 @@ def pagina_analise_por_grupos():
         def secao2():
             st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
             st.markdown('''Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média  
-                        (*Heatmap 1*) e desvio padrão (*Heatmap 2*) dos fatores disponibilizados para cada um dos municípios.  
-                        Um **mapa de calor** (*heatmap*) é uma visualização gráfica que usa cores para representar a intensidade dos valores
+                        (*Figura 1*) e desvio padrão (*Figura 2*) dos fatores disponibilizados para cada um dos municípios.  
+                        Heatmap, também conhecido como Mapa de Calor, é uma visualização gráfica que usa cores para representar a intensidade dos valores
                         em uma matriz de dados. Cada célula da matriz é colorida de acordo com seu valor, facilitando a identificação de 
                         padrões, tendências e anomalias nos dados.  
                         **Média**: É a soma de todos os valores de um conjunto dividida pelo número de valores. 
@@ -382,6 +383,7 @@ def pagina_analise_por_grupos():
                         **Desvio padrão**: Mede a dispersão dos valores em relação à média. Mostra o quanto os valores variam da média.
                 
         Importante:
+        Nas figuras referentes aos Mapas de Calor:
         As linhas representam os municípios, que estão em ordem alfabética;
         As colunas representam os fatores selecionados pelo usuário na base de dados;''')
         
