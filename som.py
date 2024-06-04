@@ -10,9 +10,10 @@ def rodar_algoritmo():
     for index, row in globals.crunched_df.iterrows():
         input_values.append(row[1:-1].values)
 
+    #np.array(globals.som_data['Nota']),
     make_shap(
         globals.som_data['Municípios'], list(globals.crunched_df.columns[1:-1]), np.array(input_values, dtype=float),
-        np.array(globals.som_data['Nota']),
+        np.array(globals.crunched_df[globals.current_output_columns]),
         globals.use_shap,
         desc=f"Gerando gráficos para {globals.crunched_df.columns[-1]}"
     )
