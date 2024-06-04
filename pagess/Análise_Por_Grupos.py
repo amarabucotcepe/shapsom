@@ -20,6 +20,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
 import matplotlib.pyplot as plt
 import globals
+from streamlit_javascript import st_javascript
 
 import unicodedata
 from datetime import datetime
@@ -63,8 +64,9 @@ def pagina_analise_por_grupos():
             filepath = f'mapa{i}.html'
             if os.path.exists(filepath):
                 os.remove(filepath)
-                     
-        def secao1():            
+                
+        def secao1():
+            
             def verificarColunaDesc(database):
                 nStrings = 0
                 for i in range(database.shape[1]):
@@ -255,7 +257,7 @@ def pagina_analise_por_grupos():
 
             def gerarRetangulo(texto):
                 st.markdown(
-                f'<div style="background-color: #CCCCCC; border: 2px solid #808080; border-radius: 5px; padding: 10px">{texto}</div>',
+                f'<div style="background-color: {rectangleColor}; border: 2px solid #808080; border-radius: 5px; padding: 10px">{texto}</div>',
                 unsafe_allow_html=True
             )
                 
@@ -275,13 +277,13 @@ def pagina_analise_por_grupos():
                 st.write(texto1)
                 st.write(texto2)
 
-                custom_css = """
+                custom_css = f"""
                 
                 <style>
-                thead th {
-                    background-color: #CCCCCC;
+                thead th {{
+                    background-color: {rectangleColor};
                     color: white;
-                }
+                }}
                 </style>
                 """
                 st.markdown(custom_css, unsafe_allow_html=True)
@@ -289,6 +291,9 @@ def pagina_analise_por_grupos():
 
                 if( globals.current_database is not None):
                     st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+
+                gerarEspaco()
+                st.info(f'Tabela 1 - Dicionário de dados do arquivo de entrada')
 
                 gerarEspaco()
 
@@ -338,12 +343,11 @@ def pagina_analise_por_grupos():
         ##############################################################################
         # FUNÇÕES AUXILIARES PARA AS SEÇÕES 2 E 5
         def formatDf(df):
-            municipios = df[['Município']]
-            formated_df = df.drop(columns=df.columns[:3])
+            formated_df = df.drop(columns=['Município'])
             nums_columns = list(range(1, len(formated_df.columns) + 1))
             formated_df.columns = nums_columns
         
-            return formated_df, municipios
+            return formated_df
             
         def generate_heatmap(data, cmap):
                 largura, altura = data.shape
@@ -353,30 +357,37 @@ def pagina_analise_por_grupos():
                     annot=False,
                     cmap=cmap,
                     square=True,
-                    #vmin=0, vmax=1, 
-                    cbar=True, cbar_kws={'orientation': 'vertical'})
+                    vmin=0,
+                    vmax = 1, 
+                    cbar_kws={'orientation': 'vertical'}
+                    
+                    )
                 
                 return heatmap
         ###################################################################################
 
         def secao2():
             st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
-            st.markdown('''Esta seção traz uma análise visual da base de dados, 
-                        fornecendo média e desvio padrão dos fatores disponibilizados para cada um dos municípios. 
-        
-                        Importante:
-            As linhas representam os municípios, que estão em ordem alfabética;
-            As colunas representam os fatores selecionados pelo usuário na base de dados;
-            A cor de cada quadrado indica a intensidade do fator naquele município.''')
+            st.markdown('''Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média  
+                        (*Heatmap 1*) e desvio padrão (*Heatmap 2*) dos fatores disponibilizados para cada um dos municípios.  
+                        Um **mapa de calor** (*heatmap*) é uma visualização gráfica que usa cores para representar a intensidade dos valores
+                        em uma matriz de dados. Cada célula da matriz é colorida de acordo com seu valor, facilitando a identificação de 
+                        padrões, tendências e anomalias nos dados.  
+                        **Média**: É a soma de todos os valores de um conjunto dividida pelo número de valores. 
+                        Representa o valor médio  
+                        **Desvio padrão**: Mede a dispersão dos valores em relação à média. Mostra o quanto os valores variam da média.
+                
+        Importante:
+        As linhas representam os municípios, que estão em ordem alfabética;
+        As colunas representam os fatores selecionados pelo usuário na base de dados;''')
         
             col1, col2 = st.columns(2)
             with col1:
                 df_previa = globals.crunched_df.drop(columns=globals.crunched_df.columns[[0, 2]], axis=1)
                 crunched_df, a = formatDf(globals.crunched_df)
+                st.write("**Tabela 1 - Média:**")
                 st.dataframe(df_previa)
-                globals.table_list.append('table4')
-                st.info(f"**Tabela {len(globals.table_list)} - Média**")
-
+                st.subheader('Heatmap 1')
                 heatmap1 = generate_heatmap(crunched_df, 'viridis')
                 st.pyplot(heatmap1.figure)
                 globals.img_list.append('fig3')
@@ -385,10 +396,9 @@ def pagina_analise_por_grupos():
             with col2:
                 df_previa = globals.crunched_std.drop(columns=globals.crunched_std.columns[[0, 2]], axis=1)
                 crunched_std, a = formatDf(globals.crunched_std)
+                st.write("**Tabela 2 - Desvio Padrão:**")
                 st.dataframe(df_previa)
-                globals.table_list.append('table5')
-                st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
-                
+                st.subheader('Heatmap 2')
                 heatmap2 = generate_heatmap(crunched_std, 'inferno')
                 st.pyplot(heatmap2.figure)
                 globals.img_list.append('fig4')
@@ -514,37 +524,46 @@ def pagina_analise_por_grupos():
 
         def secao5():
             st.subheader('Seção 5 - Filtro de Triagem')
-            st.text('Explicar como esse filtro está sendo aplicado e falar que ele também será aplicado na parte de anomalias')
+            st.markdown('''Esta seção, assim como na seção 2, traz uma análise vizual da base de dados, porém agora em uma fatia dos dados
+                        escolida pelo usuário.  
+                        Essa vizualização é útil para analizar de forma mais detalhada elementos de interesse da base de dados.
+                
+            Como essa seção funciona:
+        Ela usa os valores forneceidos pelo usuário nos campos abaixo para filtrar 
+        a última coluna da base (saída), exibindo as tabelas e mapas de calor para 
+        o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
+        de valores fornecido pelo usuário.''')
+            
             col1, col2 = st.columns(2)
             with col1:
-                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
+                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número")
             with col2:
-                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
+                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número")
         
-            def filtrar_dfs(media_df, std_df, minimo, maximo, nomes):
-                media_df_filtrado = media_df[(media_df.iloc[:, -1] >= (minimo/100)) & (media_df.iloc[:, -1] <= (maximo/100))]
-                std_df_filtrado = std_df.iloc[media_df_filtrado.index]
-                nomes_filtrado = nomes.iloc[media_df_filtrado.index]
-                return media_df_filtrado, std_df_filtrado, nomes_filtrado
+            def filtrar_df(df, minimo, maximo):
+                df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
+                return df_filtrado
         
             if val_min > val_max:
                 st.write("**O valor mínimo deve ser menor que o valor máximo**")
+            elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
+                st.write("**Os valores devem estar entre 0 e 100**")
             else:
                 botao = st.button("Filtrar", type='primary')
         
                 if botao:
-                    crunched_df, municipios = formatDf(globals.crunched_df)
-                    crunched_std, a = formatDf(globals.crunched_std)
-                    df_filtrado, std_filtrado, municipios_filtrados = filtrar_dfs(crunched_df, crunched_std, val_min, val_max, municipios )
-                    if df_filtrado.empty:
+                    media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
+                    std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
+                    crunched_df = formatDf(media_df_filtrado)
+                    crunched_std = formatDf(std_filtrado)
+                    if media_df_filtrado.empty:
                         st.write("**Não há dados nesse intevalo de valores**")
                     else:    
                         with col1:
                             df_previa = pd.concat([municipios_filtrados, df_filtrado], axis=1)
+                            st.write("**Tabela 1 - Média:**")
                             st.dataframe(df_previa)
-                            globals.table_list.append('table5x1')
-                            st.info(f"**Tabela {len(globals.table_list)} - Média**")
-
+                            st.subheader('Heatmap 1')
                             heatmap1 = generate_heatmap(df_filtrado, 'viridis')
                             st.pyplot(heatmap1.figure)
                             globals.img_list.append('img5x1')
@@ -552,10 +571,9 @@ def pagina_analise_por_grupos():
                         
                         with col2:
                             df_previa = pd.concat([municipios_filtrados, std_filtrado], axis=1)
+                            st.write("**Tabela 2 - Desvio Padrão:**")
                             st.dataframe(df_previa)
-                            globals.table_list.append('table5x2')
-                            st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
-
+                            st.subheader('Heatmap 2')
                             heatmap2 = generate_heatmap(std_filtrado, 'inferno')
                             st.pyplot(heatmap2.figure)
                             globals.img_list.append('img5x2')
@@ -565,17 +583,12 @@ def pagina_analise_por_grupos():
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
             try:
                 secao()
-                st.divider()
-                quebra_pagina()
             except:
                 st.subheader(f'Seção {i+1} - Erro')
+                st.write(f'Erro: {str(e)}')
 
 
     pagina_anomalias()
 
     relatorio_regioes()
-
-    globals.table_list.append('table7x1')
-    st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Macro e Microrregiões**")
-
-    
+    relatorio_municipios()
