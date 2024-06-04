@@ -14,13 +14,13 @@ import folium
 import json
 from streamlit_folium import st_folium
 import matplotlib.colors as mcolors
+from streamlit_javascript import st_javascript
 
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
 import matplotlib.pyplot as plt
 import globals
-from streamlit_javascript import st_javascript
 
 import unicodedata
 from datetime import datetime
@@ -64,9 +64,16 @@ def pagina_analise_por_grupos():
             filepath = f'mapa{i}.html'
             if os.path.exists(filepath):
                 os.remove(filepath)
-                
-        def secao1():
-            
+                     
+        def secao1():  
+            st_theme = st_javascript("""window.getComputedStyle(window.parent.document.getElementsByClassName("stApp")[0]).getPropertyValue("color-scheme")""")
+
+            rectangleColor = '#CCCCCC'
+            if(st_theme=='light'):
+                rectangleColor = '#CCCCCC'
+            else:
+                rectangleColor = '#444444'
+          
             def verificarColunaDesc(database):
                 nStrings = 0
                 for i in range(database.shape[1]):
@@ -277,13 +284,13 @@ def pagina_analise_por_grupos():
                 st.write(texto1)
                 st.write(texto2)
 
-                custom_css = f"""
+                custom_css = """
                 
                 <style>
-                thead th {{
-                    background-color: {rectangleColor};
+                thead th {
+                    background-color:{rectangleColor};
                     color: white;
-                }}
+                }
                 </style>
                 """
                 st.markdown(custom_css, unsafe_allow_html=True)
@@ -291,9 +298,6 @@ def pagina_analise_por_grupos():
 
                 if( globals.current_database is not None):
                     st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
-
-                gerarEspaco()
-                st.info(f'Tabela 1 - Dicionário de dados do arquivo de entrada')
 
                 gerarEspaco()
 
@@ -383,23 +387,23 @@ def pagina_analise_por_grupos():
         
             col1, col2 = st.columns(2)
             with col1:
-                df_previa = globals.crunched_df.drop(columns=globals.crunched_df.columns[[0, 2]], axis=1)
-                crunched_df, a = formatDf(globals.crunched_df)
-                st.write("**Tabela 1 - Média:**")
-                st.dataframe(df_previa)
-                st.subheader('Heatmap 1')
-                heatmap1 = generate_heatmap(crunched_df, 'viridis')
+                crunched_df = formatDf(globals.crunched_df)
+                st.dataframe(globals.crunched_df)
+                globals.table_list.append('table4')
+                st.info(f"**Tabela {len(globals.table_list)} - Média**")
+
+                heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                 st.pyplot(heatmap1.figure)
                 globals.img_list.append('fig3')
                 st.info(f'Figura {len(globals.img_list)} - Heatmap da Média dos Dados dos Municípios')
             
             with col2:
-                df_previa = globals.crunched_std.drop(columns=globals.crunched_std.columns[[0, 2]], axis=1)
-                crunched_std, a = formatDf(globals.crunched_std)
-                st.write("**Tabela 2 - Desvio Padrão:**")
-                st.dataframe(df_previa)
-                st.subheader('Heatmap 2')
-                heatmap2 = generate_heatmap(crunched_std, 'inferno')
+                crunched_std = formatDf(globals.crunched_std)
+                st.dataframe(globals.crunched_std)
+                globals.table_list.append('table5')
+                st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                
+                heatmap2 = generate_heatmap(crunched_std, 'gray')
                 st.pyplot(heatmap2.figure)
                 globals.img_list.append('fig4')
                 st.info(f'Figura {len(globals.img_list)} - Heatmap do Desvião Padrão dos Dados dos Municípios')  
@@ -533,24 +537,23 @@ def pagina_analise_por_grupos():
         a última coluna da base (saída), exibindo as tabelas e mapas de calor para 
         o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
         de valores fornecido pelo usuário.''')
-            
             col1, col2 = st.columns(2)
             with col1:
-                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número")
+                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
             with col2:
-                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número")
+                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
         
             def filtrar_df(df, minimo, maximo):
-                df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
-                return df_filtrado
-        
+                    df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
+                    return df_filtrado
+            
             if val_min > val_max:
                 st.write("**O valor mínimo deve ser menor que o valor máximo**")
             elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
                 st.write("**Os valores devem estar entre 0 e 100**")
             else:
                 botao = st.button("Filtrar", type='primary')
-        
+            
                 if botao:
                     media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
                     std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
@@ -558,23 +561,23 @@ def pagina_analise_por_grupos():
                     crunched_std = formatDf(std_filtrado)
                     if media_df_filtrado.empty:
                         st.write("**Não há dados nesse intevalo de valores**")
-                    else:    
+                    else:     
                         with col1:
-                            df_previa = pd.concat([municipios_filtrados, df_filtrado], axis=1)
-                            st.write("**Tabela 1 - Média:**")
-                            st.dataframe(df_previa)
-                            st.subheader('Heatmap 1')
-                            heatmap1 = generate_heatmap(df_filtrado, 'viridis')
+                            st.dataframe(media_df_filtrado)
+                            globals.table_list.append('table5x1')
+                            st.info(f"**Tabela {len(globals.table_list)} - Média**")
+
+                            heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                             st.pyplot(heatmap1.figure)
                             globals.img_list.append('img5x1')
                             st.info(f"**Figura {len(globals.img_list)} - Média**")
                         
                         with col2:
-                            df_previa = pd.concat([municipios_filtrados, std_filtrado], axis=1)
-                            st.write("**Tabela 2 - Desvio Padrão:**")
-                            st.dataframe(df_previa)
-                            st.subheader('Heatmap 2')
-                            heatmap2 = generate_heatmap(std_filtrado, 'inferno')
+                            st.dataframe(std_filtrado)
+                            globals.table_list.append('table5x2')
+                            st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+
+                            heatmap2 = generate_heatmap(crunched_std, 'gray')
                             st.pyplot(heatmap2.figure)
                             globals.img_list.append('img5x2')
                             st.info(f"**Figura {len(globals.img_list)} - Desvio Padrão**")
@@ -583,12 +586,17 @@ def pagina_analise_por_grupos():
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
             try:
                 secao()
+                st.divider()
+                quebra_pagina()
             except:
                 st.subheader(f'Seção {i+1} - Erro')
-                st.write(f'Erro: {str(e)}')
 
 
     pagina_anomalias()
 
     relatorio_regioes()
-    relatorio_municipios()
+
+    globals.table_list.append('table7x1')
+    st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Macro e Microrregiões**")
+
+    
