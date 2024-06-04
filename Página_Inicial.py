@@ -173,16 +173,18 @@ def pagina_inicial():
         submit_button = st.button('Iniciar Análise')
         
         if submit_button:
-            st.dataframe(selected_df)
+            st.info('Programa Executado! Siga para a seção de Análise Estatística Exploratória localizada no começo da aplicação.')
             rodar_algoritmo()
     else:
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3= st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos"])
+tab1, tab2, tab3, tab4= st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos", 'Relatório Individual'])
 with tab1:
    pagina_inicial()
 with tab2:
    pagina_analise_estatistica_exploratoria()
 with tab3:
     pagina_analise_por_grupos()
+with tab4:
+    relatorio_municipios()

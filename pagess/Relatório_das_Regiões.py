@@ -6,6 +6,7 @@ from weasyprint import HTML
 from PIL import Image
 import base64
 import os
+import globals
 
 from my_utils import add_cabecalho
 
@@ -13,7 +14,7 @@ html_table = ''
 
 def relatorio_regioes():
     secao6()    
-    st.subheader('Seção 7Relatório das Regiões 🗺️')
+    st.subheader('Seção 7 - Relatório das Regiões 🗺️')
 
     with st.expander("Relatório", expanded=True):
         # Ler o PDF

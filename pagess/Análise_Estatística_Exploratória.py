@@ -24,7 +24,16 @@ import plotly.graph_objects as go
 import geopandas as gpd
 
 import os
-
+def quebra_pagina():
+    st.markdown("""
+        <style type="text/css" media="print">
+        hr{
+            page-break-after: always;
+            page-break-inside: avoid;
+        }
+        <style>
+    """, unsafe_allow_html= True)
+    
 def pagina_analise_estatistica_exploratoria():
     st.title("Relatório 📊")
     st.subheader("Análise Estatística Exploratória")
@@ -73,6 +82,7 @@ def pagina_analise_estatistica_exploratoria():
                     enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
                     intervenções mais intensivas, ajudando a direcionar políticas públicas e recursos de forma mais eficiente.''')
         st.divider()
+        quebra_pagina()
 
         st.subheader('Análise Estatística')
 
@@ -116,7 +126,8 @@ def pagina_analise_estatistica_exploratoria():
 
         # Show the scatterplot in Streamlit
         st.plotly_chart(fig, use_container_width=True)
-        st. info('Gráfico 1 - Gráfico de Dispersão da Distribuição da Variável Selecionada por Município')
+        globals.graphic_list.append('graphic1')
+        st. info(f'Gráfico {len(globals.graphic_list)} - Gráfico de Dispersão da Distribuição da Variável Selecionada por Município')
         st.markdown('''O gráfico 1 faz parte de uma análise estatística mais ampla apresentada no relatório, que visa 
                     explorar a variabilidade e o desempenho geral dos municípios. Ele permite identificar quais municípios
                      apresentam desempenhos extremos, tanto positivos quanto negativos, e como os valores da nossa variável alvo estão dispersos
@@ -144,7 +155,9 @@ def pagina_analise_estatistica_exploratoria():
             '': 'Variáveis',
             'importance': 'Importância'
         })
-        st.info('Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
+
+        globals.table_list.append('table2')
+        st.info(f'Tabela {len(globals.table_list)} -  Importância das Variáveis no Modelo de Árvore de Decisão')
         st.markdown(''' Esta tabela lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. 
                     A importância de uma variável indica quanto ela contribui para a decisão final do modelo. Valores mais altos de importância 
                     sugerem que a variável tem um impacto maior na previsão do modelo.''')
@@ -159,4 +172,5 @@ def pagina_analise_estatistica_exploratoria():
         # Show the plot in Streamlit
         st.pyplot(fig)
 
-        st.info('Imagem 1 - Árvore de Decisão')
+        globals.img_list.append('fig2')
+        st.info(f'Figura {len(globals.img_list)} - Árvore de Decisão')

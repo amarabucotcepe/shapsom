@@ -66,5 +66,8 @@ def pagina_anomalias():
                     df_aux = df_aux.sort_values(by=['Distância do centroide'], ascending=False).head(df.shape[0]//porcentagem)
                     df_aux = df_aux.drop(['Cor', 'Cor Central'],axis=1).reset_index(drop=True)
                     st.dataframe(df_aux, use_container_width=True)
+
+                    globals.table_list.append('table6x1')
+                    st.info(f"**Tabela {len(globals.table_list)} - Anomalias Encontradas**")
     except:
         st.write("Nenhum dataset foi carregado. Por favor, carregue um dataset e tente novamente.")

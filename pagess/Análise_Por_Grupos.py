@@ -38,6 +38,15 @@ from pagess.Relatório_dos_Municípios import relatorio_municipios
 
 # Set page configuration
 #st.set_page_config(layout='wide')
+def quebra_pagina():
+    st.markdown("""
+        <style type="text/css" media="print">
+        hr{
+            page-break-after: always;
+            page-break-inside: avoid;
+        }
+        <style>
+    """, unsafe_allow_html= True)
 
 def pagina_analise_por_grupos():
     has_databases = True
@@ -54,9 +63,8 @@ def pagina_analise_por_grupos():
             filepath = f'mapa{i}.html'
             if os.path.exists(filepath):
                 os.remove(filepath)
-                
-        def secao1():
-            
+                     
+        def secao1():            
             def verificarColunaDesc(database):
                 nStrings = 0
                 for i in range(database.shape[1]):
@@ -277,11 +285,16 @@ def pagina_analise_por_grupos():
                 </style>
                 """
                 st.markdown(custom_css, unsafe_allow_html=True)
+                
 
                 if( globals.current_database is not None):
                     st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 
                 gerarEspaco()
+
+                globals.table_list.append('table3')
+                st.info(f'Tabela {len(globals.table_list)} - Dados de entrada')
+
                 st.write('#### 1.2 Parâmetros de Treinamento')
                 gerarEspaco()
                 textoSOM = '''Um Mapa Auto-Organizável (SOM) é uma técnica de aprendizado não supervisionado usada para visualizar e organizar dados complexos em uma representação bidimensional. Os principais parâmetros que definem um mapa SOM incluem:
@@ -345,6 +358,7 @@ def pagina_analise_por_grupos():
                 
                 return heatmap
         ###################################################################################
+
         def secao2():
             st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
             st.markdown('''Esta seção traz uma análise visual da base de dados, 
@@ -359,21 +373,27 @@ def pagina_analise_por_grupos():
             with col1:
                 df_previa = globals.crunched_df.drop(columns=globals.crunched_df.columns[[0, 2]], axis=1)
                 crunched_df, a = formatDf(globals.crunched_df)
-                st.write("**Tabela 1 - Média:**")
                 st.dataframe(df_previa)
-                st.subheader('Heatmap 1')
+                globals.table_list.append('table4')
+                st.info(f"**Tabela {len(globals.table_list)} - Média**")
+
                 heatmap1 = generate_heatmap(crunched_df, 'viridis')
                 st.pyplot(heatmap1.figure)
+                globals.img_list.append('fig3')
+                st.info(f'Figura {len(globals.img_list)} - Heatmap da Média dos Dados dos Municípios')
             
             with col2:
                 df_previa = globals.crunched_std.drop(columns=globals.crunched_std.columns[[0, 2]], axis=1)
                 crunched_std, a = formatDf(globals.crunched_std)
-                st.write("**Tabela 2 - Desvio Padrão:**")
                 st.dataframe(df_previa)
-                st.subheader('Heatmap 2')
+                globals.table_list.append('table5')
+                st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                
                 heatmap2 = generate_heatmap(crunched_std, 'inferno')
                 st.pyplot(heatmap2.figure)
-            
+                globals.img_list.append('fig4')
+                st.info(f'Figura {len(globals.img_list)} - Heatmap do Desvião Padrão dos Dados dos Municípios')  
+                
         def secao3():
             st.subheader('Seção 3 - Análise entre grupos')
         
@@ -411,6 +431,8 @@ def pagina_analise_por_grupos():
             
             st.dataframe(novo_df, hide_index=True,)
 
+            globals.table_list.append('table6')
+            st.info(f'Tabela {len(globals.table_list)} - Influências Positivas e Negativas das Variáveis nos Grupos')  
 
         def secao4():
             #Criando as variáveis
@@ -441,8 +463,8 @@ def pagina_analise_por_grupos():
                     cor_grupo = grupo_df['Cor'].iloc[0]
                     lista_cores = grupo_df['Cor'].tolist()
 
-                    st.info(f'Grupo {i}')
-                    st.text(f'Média de {output_column} do grupo: {media_valor}')
+                    st.subheader(f'Grupo {i}')
+                    st.text(f'Média de {output_column} do grupo {i}: {media_valor}')
 
                     def apply_color(val):
                         return f"background-color: {cor_grupo}; "
@@ -454,6 +476,9 @@ def pagina_analise_por_grupos():
                         'Cor': None
                         }             
                     )
+
+                    globals.table_list.append(f'table{i+4}')
+                    st.info(f"**Tabela {len(globals.table_list)} - Municípios do Grupo {i}**")
 
                     #Mapas
                     
@@ -484,6 +509,9 @@ def pagina_analise_por_grupos():
                         else:
                             generate_map()
 
+                    globals.img_list.append(f'img{i+3}')
+                    st.info(f"**Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}**")
+
         def secao5():
             st.subheader('Seção 5 - Filtro de Triagem')
             st.text('Explicar como esse filtro está sendo aplicado e falar que ele também será aplicado na parte de anomalias')
@@ -513,28 +541,41 @@ def pagina_analise_por_grupos():
                     else:    
                         with col1:
                             df_previa = pd.concat([municipios_filtrados, df_filtrado], axis=1)
-                            st.write("**Tabela 1 - Média:**")
                             st.dataframe(df_previa)
-                            st.subheader('Heatmap 1')
+                            globals.table_list.append('table5x1')
+                            st.info(f"**Tabela {len(globals.table_list)} - Média**")
+
                             heatmap1 = generate_heatmap(df_filtrado, 'viridis')
                             st.pyplot(heatmap1.figure)
+                            globals.img_list.append('img5x1')
+                            st.info(f"**Figura {len(globals.img_list)} - Média**")
                         
                         with col2:
                             df_previa = pd.concat([municipios_filtrados, std_filtrado], axis=1)
-                            st.write("**Tabela 2 - Desvio Padrão:**")
                             st.dataframe(df_previa)
-                            st.subheader('Heatmap 2')
+                            globals.table_list.append('table5x2')
+                            st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+
                             heatmap2 = generate_heatmap(std_filtrado, 'inferno')
                             st.pyplot(heatmap2.figure)
+                            globals.img_list.append('img5x2')
+                            st.info(f"**Figura {len(globals.img_list)} - Desvio Padrão**")
 
         st.title('Análise Por Grupos com SHAP/SOM')
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
             try:
                 secao()
+                st.divider()
+                quebra_pagina()
             except:
                 st.subheader(f'Seção {i+1} - Erro')
 
 
     pagina_anomalias()
+
     relatorio_regioes()
-    relatorio_municipios()
+
+    globals.table_list.append('table7x1')
+    st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Macro e Microrregiões**")
+
+    
