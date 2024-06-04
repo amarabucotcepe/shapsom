@@ -67,12 +67,6 @@ def pagina_analise_por_grupos():
                      
         def secao1():  
             st_theme = st_javascript("""window.getComputedStyle(window.parent.document.getElementsByClassName("stApp")[0]).getPropertyValue("color-scheme")""")
-
-            rectangleColor = '#CCCCCC'
-            if(st_theme=='light'):
-                rectangleColor = '#CCCCCC'
-            else:
-                rectangleColor = '#444444'
           
             def verificarColunaDesc(database):
                 nStrings = 0
@@ -128,7 +122,7 @@ def pagina_analise_por_grupos():
                         textoFaltantes += '.'
 
                 texto1 = texto1 + ' ' + textoFaltantes
-                texto2 = 'A seguir, na tabela 1, apresentamos o dicionário de dados. É importante notar que colunas com texto ou aquelas que foram ocultadas durante a criação do mapa não foram incluídas na análise.'
+                texto1 += ' A seguir, na tabela 1, apresentamos o dicionário de dados. É importante notar que colunas com texto ou aquelas que foram ocultadas durante a criação do mapa não foram incluídas na análise.'
 
                 # Dicionário de dados
 
@@ -262,12 +256,6 @@ def pagina_analise_por_grupos():
                     dicionarioDados.columns = ['Fator','Nome da coluna','Tipo de dado']
                 else:
                     dicionarioDados.columns = ['Fator','Nome da coluna','Descrição do dado','Tipo de dado']
-
-            def gerarRetangulo(texto):
-                st.markdown(
-                f'<div style="background-color: {rectangleColor}; border: 2px solid #808080; border-radius: 5px; padding: 10px">{texto}</div>',
-                unsafe_allow_html=True
-            )
                 
             def gerarEspaco():
                 st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
@@ -279,17 +267,15 @@ def pagina_analise_por_grupos():
             else:
                 st.write('#### 1.1 Dados de Treinamento')
                 gerarEspaco()
-                textoSOM = 'Um dicionário de dados é uma tabela que contém informações sobre os dados disponibilizados. As informações reveladas abaixo revelam o número atribuído a cada fator, sua descrição quando disponibilizada e seu tipo de dado.'
-                gerarRetangulo(textoSOM)
-                gerarEspaco()
+                textoDicionario = 'Um dicionário de dados é uma tabela que contém informações sobre os dados disponibilizados. As informações reveladas abaixo revelam o número atribuído a cada fator, sua descrição quando disponibilizada e seu tipo de dado.'
                 st.write(texto1)
-                st.write(texto2)
+                st.write(textoDicionario)
 
                 custom_css = """
                 
                 <style>
                 thead th {
-                    background-color:{rectangleColor};
+                    background-color: #717171;
                     color: white;
                 }
                 </style>
@@ -315,8 +301,7 @@ def pagina_analise_por_grupos():
                 \n●	Sigma: O raio de influência de cada unidade durante o treinamento.
                 \n●	Taxa de aprendizado: Controla a magnitude das atualizações dos pesos das unidades durante o treinamento.
                 '''
-                gerarRetangulo(textoSOM)
-                gerarEspaco()
+                st.write(textoSOM)
                 st.write('Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:')
                 param_treino = [
                     "Topologia: "+str(globals.topology),
