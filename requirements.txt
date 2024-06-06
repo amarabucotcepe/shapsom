@@ -70,6 +70,7 @@ six==1.16.0
 slicer==0.0.7
 smmap==5.0.1
 streamlit==1.33.0
+streamlit_javascript
 streamlit_folium==0.20.0
 tenacity==8.2.3
 threadpoolctl==3.4.0
