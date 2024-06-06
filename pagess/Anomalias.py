@@ -50,7 +50,7 @@ def pagina_anomalias():
             med_x = df['x'].median()
             med_y = df['y'].median()
             st.write(f"O centroide do está localizado em: x = {med_x} e y = {med_y}")
-            globals.porcentagem = st.slider("Porcentagem", min_value=1, max_value=100, step=1, value=10, help="Porcentagem de anomalias esperadas. Por exemplo, se o valor for 10, o algoritmo irá mostrar 10% dos dados como anomalias.")
+            globals.porcentagem = st.slider("Selecione a porcentagem de anômalos esperados", min_value=1, max_value=100, step=1, value=10, help="Porcentagem de anomalias esperadas. Por exemplo, se o valor for 10, o algoritmo irá mostrar 10% dos dados como anomalias.")
             get_anomalies = st.button("Obter Anomalias")
             if get_anomalies:
                 porcentagem=10

@@ -293,15 +293,7 @@ def pagina_analise_por_grupos():
 
                 st.write('#### 1.2 Parâmetros de Treinamento')
                 gerarEspaco()
-                textoSOM = '''Um Mapa Auto-Organizável (SOM) é uma técnica de aprendizado não supervisionado usada para visualizar e organizar dados complexos em uma representação bidimensional. Os principais parâmetros que definem um mapa SOM incluem:
-                \n●	Topologia hexagonal: Define como as células do mapa influenciam suas vizinhas em um arranjo hexagonal.
-                \n●	Distância de cluster: Determina como as unidades são agrupadas com base na similaridade dos dados.
-                \n●	Épocas: Representam o número de vezes que o modelo passa pelos dados durante o treinamento.
-                \n●	Tamanho do mapa: Define o número total de unidades no mapa.
-                \n●	Sigma: O raio de influência de cada unidade durante o treinamento.
-                \n●	Taxa de aprendizado: Controla a magnitude das atualizações dos pesos das unidades durante o treinamento.
-                '''
-                st.write(textoSOM)
+                
                 st.write('Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:')
                 param_treino = [
                     "Topologia: "+str(globals.topology),
@@ -357,20 +349,21 @@ def pagina_analise_por_grupos():
         ###################################################################################
 
         def secao2():
-            st.subheader('Seção 2 - Visão Geral de Dados e Heatmap')
-            st.markdown('''Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média  
-                        (*Figura 1*) e desvio padrão (*Figura 2*) dos fatores disponibilizados para cada um dos municípios.  
+            st.subheader('**Seção 2 - Visão Geral de Dados e Heatmap**')
+            st.markdown('''
+                        Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média  
+                        (*Gráfico 1*) e desvio padrão (*Gráfico 2*) dos fatores disponibilizados para cada um dos municípios.  
                         Heatmap, também conhecido como Mapa de Calor, é uma visualização gráfica que usa cores para representar a intensidade dos valores
                         em uma matriz de dados. Cada célula da matriz é colorida de acordo com seu valor, facilitando a identificação de 
                         padrões, tendências e anomalias nos dados.  
                         **Média**: É a soma de todos os valores de um conjunto dividida pelo número de valores. 
                         Representa o valor médio  
-                        **Desvio padrão**: Mede a dispersão dos valores em relação à média. Mostra o quanto os valores variam da média.
-                
-        Importante:
-        Nas figuras referentes aos Mapas de Calor:
-        As linhas representam os municípios, que estão em ordem alfabética;
-        As colunas representam os fatores selecionados pelo usuário na base de dados;''')
+                        **Desvio padrão**: Mede a dispersão dos valores em relação à média. Mostra o quanto os valores variam da média. 
+                        ''')
+            st.markdown('''Importante:
+                        Nos gráficos referentes aos Mapas de Calor:
+                        As linhas representam os municípios, que estão em ordem alfabética;
+                        As colunas representam os fatores selecionados pelo usuário na base de dados''')
         
             col1, col2 = st.columns(2)
             with col1:
@@ -381,8 +374,8 @@ def pagina_analise_por_grupos():
 
                 heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                 st.pyplot(heatmap1.figure)
-                globals.img_list.append('fig3')
-                st.info(f'Figura {len(globals.img_list)} - Heatmap da Média dos Dados dos Municípios')
+                globals.graphic_list.append('graph1')
+                st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap da Média dos Dados dos Municípios')
             
             with col2:
                 crunched_std = formatDf(globals.crunched_std)
@@ -392,15 +385,15 @@ def pagina_analise_por_grupos():
                 
                 heatmap2 = generate_heatmap(crunched_std, 'gray')
                 st.pyplot(heatmap2.figure)
-                globals.img_list.append('fig4')
-                st.info(f'Figura {len(globals.img_list)} - Heatmap do Desvião Padrão dos Dados dos Municípios')  
+                globals.graphic_list.append('graph2')
+                st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap do Desvião Padrão dos Dados dos Municípios')  
                 
         def secao3():
-            st.subheader('Seção 3 - Análise entre grupos')
+            st.subheader('**Seção 3 - Análise de agrupamentos**')
         
             st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
-            "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias. Os mapas gerados pelas Redes SOM são topológicos, não geográficos, o que permite tratar diferentes entidades de forma justa e diligente, com base em suas semelhanças.''')
+            "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
             
             #st.text(globals.som_data)
             tabela_df = globals.shapsom_data.copy()
@@ -514,16 +507,15 @@ def pagina_analise_por_grupos():
                     st.info(f"**Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}**")
 
         def secao5():
-            st.subheader('Seção 5 - Filtro de Triagem')
-            st.markdown('''Esta seção, assim como na seção 2, traz uma análise vizual da base de dados, porém agora em uma fatia dos dados
+            st.subheader('**Seção 5 - Filtro de Triagem**')
+            st.markdown('''Esta seção, assim como na seção 2, traz uma análise visual da base de dados, porém agora em uma fatia dos dados
                         escolida pelo usuário.  
-                        Essa vizualização é útil para analizar de forma mais detalhada elementos de interesse da base de dados.
-                
-            Como essa seção funciona:
-        Ela usa os valores forneceidos pelo usuário nos campos abaixo para filtrar 
-        a última coluna da base (saída), exibindo as tabelas e mapas de calor para 
-        o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
-        de valores fornecido pelo usuário.''')
+                        Essa visualização é útil para analizar de forma mais detalhada elementos de interesse da base de dados.''')
+            st.markdown('''Como essa seção funciona:
+                        Ela usa os valores fornecidos pelo usuário nos campos abaixo para filtrar 
+                        a última coluna da base (saída), exibindo as tabelas e mapas de calor para 
+                        o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
+                        de valores fornecido pelo usuário.''')
             col1, col2 = st.columns(2)
             with col1:
                 val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
@@ -556,8 +548,8 @@ def pagina_analise_por_grupos():
 
                             heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                             st.pyplot(heatmap1.figure)
-                            globals.img_list.append('img5x1')
-                            st.info(f"**Figura {len(globals.img_list)} - Média**")
+                            globals.graphic_list.append('graph5x1')
+                            st.info(f"**Gráfico {len(globals.graphic_list)} - Média**")
                         
                         with col2:
                             st.dataframe(std_filtrado)
@@ -566,8 +558,8 @@ def pagina_analise_por_grupos():
 
                             heatmap2 = generate_heatmap(crunched_std, 'gray')
                             st.pyplot(heatmap2.figure)
-                            globals.img_list.append('img5x2')
-                            st.info(f"**Figura {len(globals.img_list)} - Desvio Padrão**")
+                            globals.graphic_list.append('graph5x2')
+                            st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
 
         st.title('Análise Por Grupos com SHAP/SOM')
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
@@ -584,6 +576,6 @@ def pagina_analise_por_grupos():
     relatorio_regioes()
 
     globals.table_list.append('table7x1')
-    st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Macro e Microrregiões**")
+    st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Meso e Microrregiões**")
 
     

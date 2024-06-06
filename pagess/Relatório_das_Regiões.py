@@ -16,6 +16,8 @@ def relatorio_regioes():
     secao6()    
     st.subheader('Seção 7 - Relatório das Regiões 🗺️')
 
+    st.markdown('Essa seção traz uma tabela com todos os municípios de Pernambuco, identificando suas mesorregiões e microrregiões e dando um índice para elas, que é o índice utilizado nos Mapas de Calor.')
+
     with st.expander("Relatório", expanded=True):
         # Ler o PDF
         with open('secao6.pdf', "rb") as f:

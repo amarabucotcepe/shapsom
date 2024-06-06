@@ -25,7 +25,7 @@ def relatorio_municipios():
         st.subheader("Selecione os Municípios")
         list_selected_labels = st.multiselect("Municípios", list_all_labels, help='Selecione os municípios para gerar os relatórios individuais de cada um deles', key="my_multiselect")
         use_mark_all = st.checkbox("Selecionar Todos", help="Selecione para marcar todos os municípios")
-        st.info('Para usar essa funcionalidade é necessário que a opção "Incluir Análise Individual dos Municípios" esteja Ativada.')
+        st.markdown('Para usar essa funcionalidade é necessário que a opção "Incluir Análise Individual dos Municípios" esteja Ativada.')
         button = st.form_submit_button('Executar')
 
     if button:
@@ -33,7 +33,7 @@ def relatorio_municipios():
             globals.current_list_labels = list_all_labels if use_mark_all else list_selected_labels
             gerar_anexos()
         else:
-            st.info('A opção Criar SHAP está Desativada, por favor execute novamente com esta opção Ativa.')
+            st.markdown('A opção "Incluir Análise Individual dos Municípios" está Desativada, por favor execute novamente com esta opção Ativa.')
 
 
 def gerar_anexos():
