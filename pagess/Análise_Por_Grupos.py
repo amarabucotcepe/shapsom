@@ -265,62 +265,66 @@ def pagina_analise_por_grupos():
             if( globals.current_database is None):
                 st.write('Escolha a base de dados.')
             else:
-                st.write('#### 1.1 Dados de Treinamento')
+                st.markdown('Esta seção trará informações gerais sobre o arquivo de entrada escolhido pelo usuário e os parâmetros utilizados para a criação do mapa SOM.')
+                botaos1 = st.button('Gerar seção 1')
                 gerarEspaco()
-                textoDicionario = 'Um dicionário de dados é uma tabela que contém informações sobre os dados disponibilizados. As informações reveladas abaixo revelam o número atribuído a cada fator, sua descrição quando disponibilizada e seu tipo de dado.'
-                st.write(texto1)
-                st.write(textoDicionario)
+                if botaos1:
+                    st.write('#### 1.1 Dados de Treinamento')
+                    gerarEspaco()
+                    textoDicionario = 'Um dicionário de dados é uma tabela que contém informações sobre os dados disponibilizados. As informações reveladas abaixo revelam o número atribuído a cada fator, sua descrição quando disponibilizada e seu tipo de dado.'
+                    st.write(texto1)
+                    st.write(textoDicionario)
 
-                custom_css = """
-                
-                <style>
-                thead th {
-                    background-color: #717171;
-                    color: white;
-                }
-                </style>
-                """
-                st.markdown(custom_css, unsafe_allow_html=True)
-                
+                    custom_css = """
+                    
+                    <style>
+                    thead th {
+                        background-color: #717171;
+                        color: white;
+                    }
+                    </style>
+                    """
+                    st.markdown(custom_css, unsafe_allow_html=True)
+                    
 
-                if( globals.current_database is not None):
-                    st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+                    if( globals.current_database is not None):
+                        st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 
-                gerarEspaco()
+                    gerarEspaco()
 
-                globals.table_list.append('table3')
-                st.info(f'Tabela {len(globals.table_list)} - Dicionário de Dados')
+                    globals.table_list.append('table3')
+                    st.info(f'Tabela {len(globals.table_list)} - Dicionário de Dados')
 
-                st.write('#### 1.2 Parâmetros de Treinamento')
-                gerarEspaco()
-                
-                st.write('Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:')
-                param_treino = [
-                    "Topologia: "+str(globals.topology),
-                    f"Distância de cluster: "+str(globals.cluster_distance),
-                    f"Épocas: "+str(globals.epochs),
-                    f"Tamanho do mapa: "+str(globals.size),
-                    f"Sigma: "+str(globals.sigma),
-                    f"Taxa de aprendizado: "+str(globals.lr)    
-                ]
-                for item in param_treino:
-                    st.write(f"- {item}")
-                
-                #if(globals.current_output_columns != []):
-                #    gerarEspaco()
-                #    st.write('#### 1.3 Parâmetros de Triagem')
-                #    gerarEspaco()
-                #    textoTriagem = 'A etapa de triagem realizará uma análise filtrada em relação à saída "'+globals.current_output_columns[0]+'". Os limites mínimo e máximo determinam o intervalo percentual do filtro realizado.'
-                #    gerarRetangulo(textoTriagem)
-                #    gerarEspaco()
-                #    st.write('Os limites utilizados para a realização da triagem foram:')
-                #    param_triagem = [
-                #        f"Limite mínimo: {min_filter*100:.0f}%",
-                #        f"Limite máximo: {max_filter*100:.0f}%"
-                #    ]
-                #    for item in param_triagem:
-                #        st.write(f"- {item}")
-                #    gerarEspaco()
+                    st.write('#### 1.2 Parâmetros de Treinamento')
+                    gerarEspaco()
+                    
+                    st.write('Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:')
+                    param_treino = [
+                        "Topologia: "+str(globals.topology),
+                        f"Distância de cluster: "+str(globals.cluster_distance),
+                        f"Épocas: "+str(globals.epochs),
+                        f"Tamanho do mapa: "+str(globals.size),
+                        f"Sigma: "+str(globals.sigma),
+                        f"Taxa de aprendizado: "+str(globals.lr)    
+                    ]
+                    for item in param_treino:
+                        st.write(f"- {item}")
+                    
+                    #if(globals.current_output_columns != []):
+                    #    gerarEspaco()
+                    #    st.write('#### 1.3 Parâmetros de Triagem')
+                    #    gerarEspaco()
+                    #    textoTriagem = 'A etapa de triagem realizará uma análise filtrada em relação à saída "'+globals.current_output_columns[0]+'". Os limites mínimo e máximo determinam o intervalo percentual do filtro realizado.'
+                    #    gerarRetangulo(textoTriagem)
+                    #    gerarEspaco()
+                    #    st.write('Os limites utilizados para a realização da triagem foram:')
+                    #    param_triagem = [
+                    #        f"Limite mínimo: {min_filter*100:.0f}%",
+                    #        f"Limite máximo: {max_filter*100:.0f}%"
+                    #    ]
+                    #    for item in param_triagem:
+                    #        st.write(f"- {item}")
+                    #    gerarEspaco()
 
         ##############################################################################
         # FUNÇÕES AUXILIARES PARA AS SEÇÕES 2 E 5
@@ -364,29 +368,30 @@ def pagina_analise_por_grupos():
                         Nos gráficos referentes aos Mapas de Calor:
                         As linhas representam os municípios, que estão em ordem alfabética;
                         As colunas representam os fatores selecionados pelo usuário na base de dados''')
-        
-            col1, col2 = st.columns(2)
-            with col1:
-                crunched_df = formatDf(globals.crunched_df)
-                st.dataframe(globals.crunched_df)
-                globals.table_list.append('table4')
-                st.info(f"**Tabela {len(globals.table_list)} - Média**")
+            botaos2 = st.button('Gerar seção 2')
+            if botaos2:
+                col1, col2 = st.columns(2)
+                with col1:
+                    crunched_df = formatDf(globals.crunched_df)
+                    st.dataframe(globals.crunched_df)
+                    globals.table_list.append('table4')
+                    st.info(f"**Tabela {len(globals.table_list)} - Média**")
 
-                heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
-                st.pyplot(heatmap1.figure)
-                globals.graphic_list.append('graph1')
-                st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap da Média dos Dados dos Municípios')
-            
-            with col2:
-                crunched_std = formatDf(globals.crunched_std)
-                st.dataframe(globals.crunched_std)
-                globals.table_list.append('table5')
-                st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                    heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
+                    st.pyplot(heatmap1.figure)
+                    globals.graphic_list.append('graph1')
+                    st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap da Média dos Dados dos Municípios')
                 
-                heatmap2 = generate_heatmap(crunched_std, 'gray')
-                st.pyplot(heatmap2.figure)
-                globals.graphic_list.append('graph2')
-                st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap do Desvião Padrão dos Dados dos Municípios')  
+                with col2:
+                    crunched_std = formatDf(globals.crunched_std)
+                    st.dataframe(globals.crunched_std)
+                    globals.table_list.append('table5')
+                    st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                    
+                    heatmap2 = generate_heatmap(crunched_std, 'gray')
+                    st.pyplot(heatmap2.figure)
+                    globals.graphic_list.append('graph2')
+                    st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap do Desvião Padrão dos Dados dos Municípios')  
                 
         def secao3():
             st.subheader('**Seção 3 - Análise de agrupamentos**')
@@ -395,38 +400,40 @@ def pagina_analise_por_grupos():
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
             
-            #st.text(globals.som_data)
-            tabela_df = globals.shapsom_data.copy()
-            tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
+            botaos3 = st.button('Gerar seção 3')
+            if botaos3:
+                #st.text(globals.som_data)
+                tabela_df = globals.shapsom_data.copy()
+                tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
 
-            
-            tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
+                
+                tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
 
-            nome_variavel_coluna = 'Nome Variável'
-            grupos_colunas = sorted(tabela_unica['Grupo'].unique())
-            colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
+                nome_variavel_coluna = 'Nome Variável'
+                grupos_colunas = sorted(tabela_unica['Grupo'].unique())
+                colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
 
-            
-            novo_df = pd.DataFrame(columns=colunas_novo_df)
+                
+                novo_df = pd.DataFrame(columns=colunas_novo_df)
 
-            for idx, nome_variavel in enumerate(globals.shap_columns):
-                novo_df.at[idx, 'Nome Variável'] = nome_variavel
-                for grupo in grupos_colunas:
-                    valores_grupo = tabela_unica.loc[tabela_unica['Grupo'] == grupo, 'SHAP Media Cluster'].values
-                    if len(valores_grupo) > 0 and len(valores_grupo[0]) > idx:
-                        novo_df.at[idx, f'Grupo {grupo}'] = valores_grupo[0][idx]
-                    else:
-                        novo_df.at[idx, f'Grupo {grupo}'] = None
-            
-            #print(novo_df)
-            #novo_df = novo_df.style.apply_index()
-            
-            novo_df = novo_df.style.set_caption("Tabela de atributos vs agrupamento")
-            
-            st.dataframe(novo_df, hide_index=True,)
+                for idx, nome_variavel in enumerate(globals.shap_columns):
+                    novo_df.at[idx, 'Nome Variável'] = nome_variavel
+                    for grupo in grupos_colunas:
+                        valores_grupo = tabela_unica.loc[tabela_unica['Grupo'] == grupo, 'SHAP Media Cluster'].values
+                        if len(valores_grupo) > 0 and len(valores_grupo[0]) > idx:
+                            novo_df.at[idx, f'Grupo {grupo}'] = valores_grupo[0][idx]
+                        else:
+                            novo_df.at[idx, f'Grupo {grupo}'] = None
+                
+                #print(novo_df)
+                #novo_df = novo_df.style.apply_index()
+                
+                novo_df = novo_df.style.set_caption("Tabela de atributos vs agrupamento")
+                
+                st.dataframe(novo_df, hide_index=True,)
 
-            globals.table_list.append('table6')
-            st.info(f'Tabela {len(globals.table_list)} - Influências Positivas e Negativas das Variáveis nos Grupos')  
+                globals.table_list.append('table6')
+                st.info(f'Tabela {len(globals.table_list)} - Influências Positivas e Negativas das Variáveis nos Grupos')  
 
         def secao4():
             #Criando as variáveis
@@ -446,65 +453,66 @@ def pagina_analise_por_grupos():
             st.subheader('Seção 4 - Diferença entre grupos')
             st.markdown('''A análise comparativa entre os agrupamentos é conduzida combinando todas as informações 
                         da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o 
-                        objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')    
+                        objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')   
+            botaos4 = st.button('Gerar seção 4') 
+            if botaos4:
+                for i in range(max_grupo+1):
+                    if i in grupos.groups:
+                        #Tabelas
+                        grupo_df = grupos.get_group(i)
+                        media_valor = grupo_df[output_column].mean()
+                        media_valor = media_valor.round(2)
+                        cor_grupo = grupo_df['Cor'].iloc[0]
+                        lista_cores = grupo_df['Cor'].tolist()
 
-            for i in range(max_grupo+1):
-                if i in grupos.groups:
-                    #Tabelas
-                    grupo_df = grupos.get_group(i)
-                    media_valor = grupo_df[output_column].mean()
-                    media_valor = media_valor.round(2)
-                    cor_grupo = grupo_df['Cor'].iloc[0]
-                    lista_cores = grupo_df['Cor'].tolist()
+                        st.subheader(f'Grupo {i}')
+                        st.text(f'Média de {output_column} do grupo {i}: {media_valor}')
 
-                    st.subheader(f'Grupo {i}')
-                    st.text(f'Média de {output_column} do grupo {i}: {media_valor}')
+                        def apply_color(val):
+                            return f"background-color: {cor_grupo}; "
 
-                    def apply_color(val):
-                        return f"background-color: {cor_grupo}; "
+                        st.dataframe(grupo_df.style.applymap(apply_color).format({output_column:'{:.2f}'}), column_order=['municipios', 'Nota', 'Grupo', 'Cor', output_column] ,column_config={
+                            'municipios': 'Municípios',
+                            'Nota': None,
+                            'Grupo': 'Grupo',
+                            'Cor': None
+                            }             
+                        )
 
-                    st.dataframe(grupo_df.style.applymap(apply_color).format({output_column:'{:.2f}'}), column_order=['municipios', 'Nota', 'Grupo', 'Cor', output_column] ,column_config={
-                        'municipios': 'Municípios',
-                        'Nota': None,
-                        'Grupo': 'Grupo',
-                        'Cor': None
-                        }             
-                    )
+                        globals.table_list.append(f'table{i+4}')
+                        st.info(f"**Tabela {len(globals.table_list)} - Municípios do Grupo {i}**")
 
-                    globals.table_list.append(f'table{i+4}')
-                    st.info(f"**Tabela {len(globals.table_list)} - Municípios do Grupo {i}**")
-
-                    #Mapas
-                    
-                    def generate_map():
-                        # Convert the DataFrame to a GeoDataFrame
-                        gdf = gpd.read_file('PE_Municipios_2022.zip')
-                        gdf = gdf.merge(grupo_df[[grupo_df.columns[2],grupo_df.columns[-2]]], left_on='NM_MUN', right_on=grupo_df.columns[-2])
-
-                        fig, ax = plt.subplots(1, 1)
-
-                        custom_cmap = mcolors.ListedColormap([cor_grupo])
+                        #Mapas
                         
-                        values_range = np.linspace(0, 1, 10)
+                        def generate_map():
+                            # Convert the DataFrame to a GeoDataFrame
+                            gdf = gpd.read_file('PE_Municipios_2022.zip')
+                            gdf = gdf.merge(grupo_df[[grupo_df.columns[2],grupo_df.columns[-2]]], left_on='NM_MUN', right_on=grupo_df.columns[-2])
 
-                        # Plot the map and apply the custom colormap
-                        m = gdf.explore(column=grupo_df.columns[2], cmap=custom_cmap, vmin=0, vmax=1, fitbounds="locations", map_kwrds={'scrollWheelZoom': 4})
+                            fig, ax = plt.subplots(1, 1)
 
-                        components.html(m._repr_html_(), height=400)
+                            custom_cmap = mcolors.ListedColormap([cor_grupo])
+                            
+                            values_range = np.linspace(0, 1, 10)
 
-                        outfp = f"mapa{i}.html"
+                            # Plot the map and apply the custom colormap
+                            m = gdf.explore(column=grupo_df.columns[2], cmap=custom_cmap, vmin=0, vmax=1, fitbounds="locations", map_kwrds={'scrollWheelZoom': 4})
 
-                        m.save(outfp)
+                            components.html(m._repr_html_(), height=400)
 
-                    with st.spinner('Gerando mapa...'):
-                        if os.path.exists(f'mapa{i}.html'):
-                            m_repr_html_ = open(f'mapa{i}.html').read()
-                            components.html(m_repr_html_, height=400)
-                        else:
-                            generate_map()
+                            outfp = f"mapa{i}.html"
 
-                    globals.img_list.append(f'img{i+3}')
-                    st.info(f"**Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}**")
+                            m.save(outfp)
+
+                        with st.spinner('Gerando mapa...'):
+                            if os.path.exists(f'mapa{i}.html'):
+                                m_repr_html_ = open(f'mapa{i}.html').read()
+                                components.html(m_repr_html_, height=400)
+                            else:
+                                generate_map()
+
+                        globals.img_list.append(f'img{i+3}')
+                        st.info(f"**Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}**")
 
         def secao5():
             st.subheader('**Seção 5 - Filtro de Triagem**')
@@ -516,50 +524,53 @@ def pagina_analise_por_grupos():
                         a última coluna da base (saída), exibindo as tabelas e mapas de calor para 
                         o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
                         de valores fornecido pelo usuário.''')
-            col1, col2 = st.columns(2)
-            with col1:
-                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
-            with col2:
-                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
-        
-            def filtrar_df(df, minimo, maximo):
-                    df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
-                    return df_filtrado
             
-            if val_min > val_max:
-                st.write("**O valor mínimo deve ser menor que o valor máximo**")
-            elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
-                st.write("**Os valores devem estar entre 0 e 100**")
-            else:
-                botao = st.button("Filtrar", type='primary')
+            botaos5 = st.button('Gerar seção 5')
+            if botaos5:
+                col1, col2 = st.columns(2)
+                with col1:
+                    val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
+                with col2:
+                    val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
             
-                if botao:
-                    media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
-                    std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
-                    crunched_df = formatDf(media_df_filtrado)
-                    crunched_std = formatDf(std_filtrado)
-                    if media_df_filtrado.empty:
-                        st.write("**Não há dados nesse intevalo de valores**")
-                    else:     
-                        with col1:
-                            st.dataframe(media_df_filtrado)
-                            globals.table_list.append('table5x1')
-                            st.info(f"**Tabela {len(globals.table_list)} - Média**")
+                def filtrar_df(df, minimo, maximo):
+                        df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
+                        return df_filtrado
+                
+                if val_min > val_max:
+                    st.write("**O valor mínimo deve ser menor que o valor máximo**")
+                elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
+                    st.write("**Os valores devem estar entre 0 e 100**")
+                else:
+                    botao = st.button("Filtrar", type='primary')
+                
+                    if botao:
+                        media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
+                        std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
+                        crunched_df = formatDf(media_df_filtrado)
+                        crunched_std = formatDf(std_filtrado)
+                        if media_df_filtrado.empty:
+                            st.write("**Não há dados nesse intevalo de valores**")
+                        else:     
+                            with col1:
+                                st.dataframe(media_df_filtrado)
+                                globals.table_list.append('table5x1')
+                                st.info(f"**Tabela {len(globals.table_list)} - Média**")
 
-                            heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
-                            st.pyplot(heatmap1.figure)
-                            globals.graphic_list.append('graph5x1')
-                            st.info(f"**Gráfico {len(globals.graphic_list)} - Média**")
-                        
-                        with col2:
-                            st.dataframe(std_filtrado)
-                            globals.table_list.append('table5x2')
-                            st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                                heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
+                                st.pyplot(heatmap1.figure)
+                                globals.graphic_list.append('graph5x1')
+                                st.info(f"**Gráfico {len(globals.graphic_list)} - Média**")
+                            
+                            with col2:
+                                st.dataframe(std_filtrado)
+                                globals.table_list.append('table5x2')
+                                st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
 
-                            heatmap2 = generate_heatmap(crunched_std, 'gray')
-                            st.pyplot(heatmap2.figure)
-                            globals.graphic_list.append('graph5x2')
-                            st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
+                                heatmap2 = generate_heatmap(crunched_std, 'gray')
+                                st.pyplot(heatmap2.figure)
+                                globals.graphic_list.append('graph5x2')
+                                st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
 
         st.title('Análise Por Grupos com SHAP/SOM')
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
