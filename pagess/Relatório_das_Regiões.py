@@ -18,16 +18,18 @@ def relatorio_regioes():
 
     st.markdown('Essa seção traz uma tabela com todos os municípios de Pernambuco, identificando suas mesorregiões e microrregiões e dando um índice para elas, que é o índice utilizado nos Mapas de Calor.')
 
-    with st.expander("Relatório", expanded=True):
-        # Ler o PDF
-        with open('secao6.pdf', "rb") as f:
-            pdf_contents = f.read()
+    botaos7 = st.button('Gerar seção 7')
+    if botaos7:
+        with st.expander("Relatório", expanded=True):
+            # Ler o PDF
+            with open('secao6.pdf', "rb") as f:
+                pdf_contents = f.read()
 
-        # Baixar o PDF quando o botão é clicado
-        b64 = base64.b64encode(pdf_contents).decode()
-        st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="Relatório das Regiões.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Download PDF</button></a>', unsafe_allow_html=True)
+            # Baixar o PDF quando o botão é clicado
+            b64 = base64.b64encode(pdf_contents).decode()
+            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="Relatório das Regiões.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Download PDF</button></a>', unsafe_allow_html=True)
 
-        st.markdown(html_table, unsafe_allow_html=True)
+            st.markdown(html_table, unsafe_allow_html=True)
 
 def secao6():
     df = pd.read_csv('Regiões-PE.csv')
