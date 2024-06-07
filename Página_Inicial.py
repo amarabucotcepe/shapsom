@@ -27,8 +27,8 @@ globals.img_list = []
 
 def pagina_inicial():
     
-    st.title("**Relatório para Suporte às Auditorias do Tribunal de Contas do Estado de Pernambuco**")
-    st.subheader("**Inserção de Dados e Parametrizações.**")
+    st.title("**Sistema de Apoio a Auditorias do Tribunal de Contas do Estado 📊**")
+    st.subheader("**Aquisição de Dados e Parametrizações.**")
     title = st.text_input("**Informe o nome do relatório a ser gerado**", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
     tipo = st.radio('**Escolha um tipo de arquivo. Os tipos de arquivo suportados para upload são CSV e Excel.**',['CSV','Excel'], help='CSV (Comma-Separated Values): Este é um formato de arquivo simples que usa uma vírgula para separar os valores. Excel: Este é um formato de planilha criado pela Microsoft. Os arquivos Excel podem conter dados em várias planilhas, além de permitir a inclusão de gráficos, fórmulas e outras funcionalidades avançadas. ')
     st.markdown('Atente-se a como sua planilha está organizada! Tente deixá-la no formato do modelo padrão.')
@@ -184,7 +184,7 @@ def pagina_inicial():
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3, tab4= st.tabs(["Página Inicial", "Análise Estatística Exploratória", "Análise Por Grupos", 'Relatório Individual'])
+tab1, tab2, tab3, tab4= st.tabs(["Aquisição de Dados e Parametrização", "Análise Estatística Exploratória", "Análise Por Grupos", 'Relatórios Individuais'])
 with tab1:
    pagina_inicial()
 with tab2:

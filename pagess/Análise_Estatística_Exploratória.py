@@ -35,7 +35,7 @@ def quebra_pagina():
     """, unsafe_allow_html= True)
     
 def pagina_analise_estatistica_exploratoria():
-    st.title("Relatório 📊")
+    st.title("Sistema de Apoio a Auditorias do Tribunal de Contas do Estado 📊")
     st.subheader("Análise Estatística Exploratória")
 
     has_databases = True

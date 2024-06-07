@@ -34,7 +34,7 @@ def relatorio_regioes():
             globals.table_list.append('table7x1')
             st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Meso e Microrregiões**")
             st.divider()
-            st.markdown('Você chegou ao fim da página de Análises por Grupos! Para prosseguir com a aplicação, volte para o topo da página e clique em "Relatório Individual" para prosseguir até a próxima página.')
+            st.markdown('Você chegou ao fim da página de Análises por Grupos! Para prosseguir com a aplicação, volte para o topo da página e clique em "Relatórios Individuais" para prosseguir até a próxima página.')
 
 
 
