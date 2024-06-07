@@ -175,10 +175,10 @@ def pagina_inicial():
         global use_shap
         globals.use_shap = st.checkbox("Incluir Análise Individual dos Municípios", help='Selecione para obter, ao fim da execução, uma análise completa dos municípios de sua escolha individualmente')
 
-        submit_button = st.button('**Iniciar Análise**')
+        submit_button = st.button('**Finalizar agrupamentos**')
         
         if submit_button:
-            st.markdown('Agrupamentos realizados! Siga para a seção de Análise Estatística Exploratória.')
+            st.markdown('Você chegou ao fim da página de Aquisição de Dados e Parametrização. Para prosseguir com a aplicação, volte para o topo da página e clique em "Análise Estatística Exploratória" para prosseguir até a próxima página.')
             rodar_algoritmo()
     else:
         globals.file_uploaded_start_flag = False

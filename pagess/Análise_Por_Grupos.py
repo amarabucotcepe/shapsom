@@ -267,10 +267,10 @@ def pagina_analise_por_grupos():
                 st.write('Escolha a base de dados.')
             else:
                 st.markdown('Esta seção trará informações gerais sobre o arquivo de entrada escolhido pelo usuário e os parâmetros utilizados para a criação do mapa SOM.')
-                botaos1 = st.button('Gerar seção 1')
+                botaos1 = st.button('Gerar Descrição do arquivo de entrada')
                 gerarEspaco()
                 if botaos1:
-                    st.write('#### 1.1 Dados de Treinamento')
+                    st.write('#### 1.1 Dicionário de Dados')
                     gerarEspaco()
                     textoDicionario = 'Um dicionário de dados é uma tabela que contém informações sobre os dados disponibilizados. As informações reveladas abaixo revelam o número atribuído a cada fator, sua descrição quando disponibilizada e seu tipo de dado.'
                     st.write(texto1)
@@ -354,11 +354,11 @@ def pagina_analise_por_grupos():
         ###################################################################################
 
         def secao2():
-            st.subheader('**Seção 2 - Visão Geral de Dados e Heatmap**')
+            st.subheader('**Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor**')
             st.markdown('''
                         Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média  
                         (*Gráfico 1*) e desvio padrão (*Gráfico 2*) dos fatores disponibilizados para cada um dos municípios.  
-                        Heatmap, também conhecido como Mapa de Calor, é uma visualização gráfica que usa cores para representar a intensidade dos valores
+                        Mapa de Calor, também conhecido como Heatmap, é uma visualização gráfica que usa cores para representar a intensidade dos valores
                         em uma matriz de dados. Cada célula da matriz é colorida de acordo com seu valor, facilitando a identificação de 
                         padrões, tendências e anomalias nos dados.  
                         **Média**: É a soma de todos os valores de um conjunto dividida pelo número de valores. 
@@ -369,7 +369,7 @@ def pagina_analise_por_grupos():
                         Nos gráficos referentes aos Mapas de Calor:
                         As linhas representam os municípios, que estão em ordem alfabética;
                         As colunas representam os fatores selecionados pelo usuário na base de dados''')
-            botaos2 = st.button('Gerar seção 2')
+            botaos2 = st.button('Gerar Visão Geral de Dados e Mapas de Calor')
             if botaos2:
                 col1, col2 = st.columns(2)
                 with col1:
@@ -381,7 +381,7 @@ def pagina_analise_por_grupos():
                     heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                     st.pyplot(heatmap1.figure)
                     globals.graphic_list.append('graph1')
-                    st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap da Média dos Dados dos Municípios')
+                    st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) da Média dos Dados dos Municípios')
                 
                 with col2:
                     crunched_std = formatDf(globals.crunched_std)
@@ -392,7 +392,7 @@ def pagina_analise_por_grupos():
                     heatmap2 = generate_heatmap(crunched_std, 'gray')
                     st.pyplot(heatmap2.figure)
                     globals.graphic_list.append('graph2')
-                    st.info(f'Gráfico {len(globals.graphic_list)} - Heatmap do Desvião Padrão dos Dados dos Municípios')  
+                    st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')  
                 
         def secao3():
             st.subheader('*Seção 3 - Análise de agrupamentos*')
@@ -401,7 +401,7 @@ def pagina_analise_por_grupos():
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
             
-            botaos3 = st.button('Gerar seção 3')
+            botaos3 = st.button('Gerar Análise de agrupamentos')
             if botaos3:
                 #st.text(globals.som_data)
                 tabela_df = globals.shapsom_data.copy()
@@ -473,11 +473,11 @@ def pagina_analise_por_grupos():
             grupos = df_expandido.groupby('Grupo')
 
                     
-            st.subheader('Seção 4 - Diferença entre grupos')
+            st.subheader('Seção 4 - Diferenças entre grupos')
             st.markdown('''A análise comparativa entre os agrupamentos é conduzida combinando todas as informações 
                         da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o 
                         objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')   
-            botaos4 = st.button('Gerar seção 4') 
+            botaos4 = st.button('Gerar Diferenças entre grupos') 
             if botaos4:
                 for i in range(max_grupo+1):
                     if i in grupos.groups:
@@ -558,52 +558,50 @@ def pagina_analise_por_grupos():
                         o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
                         de valores fornecido pelo usuário.''')
             
-            botaos5 = st.button('Gerar seção 5')
-            if botaos5:
-                col1, col2 = st.columns(2)
-                with col1:
-                    val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
-                with col2:
-                    val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
+            col1, col2 = st.columns(2)
+            with col1:
+                val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
+            with col2:
+                val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
             
-                def filtrar_df(df, minimo, maximo):
-                        df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
-                        return df_filtrado
+            def filtrar_df(df, minimo, maximo):
+                    df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
+                    return df_filtrado
                 
-                if val_min > val_max:
-                    st.write("**O valor mínimo deve ser menor que o valor máximo**")
-                elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
-                    st.write("**Os valores devem estar entre 0 e 100**")
-                else:
-                    botao = st.button("Filtrar", type='primary')
+            if val_min > val_max:
+                st.write("**O valor mínimo deve ser menor que o valor máximo**")
+            elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
+                st.write("**Os valores devem estar entre 0 e 100**")
+            else:
+                botao = st.button("Gerar Filtro", type='primary')
                 
-                    if botao:
-                        media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
-                        std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
-                        crunched_df = formatDf(media_df_filtrado)
-                        crunched_std = formatDf(std_filtrado)
-                        if media_df_filtrado.empty:
-                            st.write("**Não há dados nesse intevalo de valores**")
-                        else:     
-                            with col1:
-                                st.dataframe(media_df_filtrado)
-                                globals.table_list.append('table5x1')
-                                st.info(f"**Tabela {len(globals.table_list)} - Média**")
+                if botao:
+                    media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
+                    std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
+                    crunched_df = formatDf(media_df_filtrado)
+                    crunched_std = formatDf(std_filtrado)
+                    if media_df_filtrado.empty:
+                        st.write("**Não há dados nesse intevalo de valores**")
+                    else:     
+                        with col1:
+                            st.dataframe(media_df_filtrado)
+                            globals.table_list.append('table5x1')
+                            st.info(f"**Tabela {len(globals.table_list)} - Média**")
 
-                                heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
-                                st.pyplot(heatmap1.figure)
-                                globals.graphic_list.append('graph5x1')
-                                st.info(f"**Gráfico {len(globals.graphic_list)} - Média**")
+                            heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
+                            st.pyplot(heatmap1.figure)
+                            globals.graphic_list.append('graph5x1')
+                            st.info(f"**Gráfico {len(globals.graphic_list)} - Média**")
                             
-                            with col2:
-                                st.dataframe(std_filtrado)
-                                globals.table_list.append('table5x2')
-                                st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                        with col2:
+                            st.dataframe(std_filtrado)
+                            globals.table_list.append('table5x2')
+                            st.info(f"**Tabela {len(globals.table_list)} - MapaDesvio Padrão**")
 
-                                heatmap2 = generate_heatmap(crunched_std, 'gray')
-                                st.pyplot(heatmap2.figure)
-                                globals.graphic_list.append('graph5x2')
-                                st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
+                            heatmap2 = generate_heatmap(crunched_std, 'gray')
+                            st.pyplot(heatmap2.figure)
+                            globals.graphic_list.append('graph5x2')
+                            st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
 
         st.title('Análise Por Grupos com SHAP/SOM')
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
