@@ -30,6 +30,13 @@ def relatorio_regioes():
             st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="Relatório das Regiões.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Download PDF</button></a>', unsafe_allow_html=True)
 
             st.markdown(html_table, unsafe_allow_html=True)
+            st.divider()
+            globals.table_list.append('table7x1')
+            st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Meso e Microrregiões**")
+            st.divider()
+            st.markdown('Você chegou ao fim da página de Análises por Grupos! Para prosseguir com a aplicação, volte para o topo da página e clique em "Relatório Individual" para prosseguir até a próxima página.')
+
+
 
 def secao6():
     df = pd.read_csv('Regiões-PE.csv')
@@ -78,6 +85,7 @@ def secao6():
     filename = "temp.html"
     with open(filename, "w") as f:
         f.write(html_pdf)
+        
 
     # Converter o HTML em PDF usando WeasyPrint
     pdf_filename = 'secao6.pdf'
@@ -86,3 +94,7 @@ def secao6():
 
     # Remover os arquivos temporários
     os.remove(filename)
+
+
+
+   

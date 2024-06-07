@@ -193,4 +193,4 @@ def pagina_analise_estatistica_exploratoria():
 
             st.info(f'Figura 2 - Árvore de Decisão')
 
-            st.markdown('Você chegou ao fim da seção de Análise Estatística Exploratória. Siga para a seção de Análise por Grupos.')
+            st.markdown('Você chegou ao fim da página de Análises Estatística Exploratória! Para prosseguir com a aplicação, volte para o topo da página e clique em "Análise Por Grupos" para prosseguir até a próxima página.')

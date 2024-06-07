@@ -429,7 +429,8 @@ def pagina_analise_por_grupos():
                 #novo_df = novo_df.style.apply_index()
                 
                 novo_df = novo_df.style.set_caption("Tabela de atributos vs agrupamento")
-                
+              
+
                 st.dataframe(novo_df, hide_index=True,)
 
                 globals.table_list.append('table6')
@@ -437,6 +438,15 @@ def pagina_analise_por_grupos():
 
         def secao4():
             #Criando as variáveis
+           
+            tabela_df = globals.shapsom_data.copy()
+            tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)                
+            tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
+            nome_variavel_coluna = 'Nome Variável'
+            grupos_colunas = sorted(tabela_unica['Grupo'].unique())
+            colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]                
+            novo_df = pd.DataFrame(columns=colunas_novo_df)
+
             original_df = globals.crunched_df
             df = globals.shapsom_data
             max_grupo = df['Grupo'].max()
@@ -481,6 +491,16 @@ def pagina_analise_por_grupos():
 
                         globals.table_list.append(f'table{i+4}')
                         st.info(f"**Tabela {len(globals.table_list)} - Municípios do Grupo {i}**")
+
+                        # shap_values = []
+                        # coluna = f'Grupo {i}'
+                        # if coluna in df.columns:
+                        #     max_val = novo_df[coluna].max()
+                        #     min_val = novo_df[coluna].min()
+                        #     max_var = novo_df[df[coluna] == max_val]['nome variável'].values[0]
+                        #     min_var = novo_df[df[coluna] == min_val]['nome variável'].values[0]
+                        #     shap_values.append({'máximo valor': max_val, 'variável máximo': max_var, 'mínimo valor': min_val, 'variável mínimo': min_var})
+                        
 
                         #Mapas
                         
@@ -585,8 +605,5 @@ def pagina_analise_por_grupos():
     pagina_anomalias()
 
     relatorio_regioes()
-
-    globals.table_list.append('table7x1')
-    st.info(f"**Tabela {len(globals.table_list)} - Municípios e Suas Meso e Microrregiões**")
 
     
