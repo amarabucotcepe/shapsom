@@ -8,7 +8,8 @@ import copy
 def rodar_algoritmo():
     input_values = []
     for index, row in globals.crunched_df.iterrows():
-        input_values.append(row[1:-1].values)
+        #input_values.append(row[1:-1].values)
+        input_values.append(row[globals.current_input_columns].values)
 
     #np.array(globals.som_data['Nota']),
     make_shap(

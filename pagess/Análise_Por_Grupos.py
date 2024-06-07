@@ -419,14 +419,27 @@ def pagina_analise_por_grupos():
                         novo_df.at[idx, f'Grupo {grupo}'] = None
             
             #print(novo_df)
-            #novo_df = novo_df.style.apply_index()
             
-            novo_df = novo_df.style.set_caption("Tabela de atributos vs agrupamento")
+           
+            #novo_df = novo_df.style.set_caption("Tabela de atributos vs agrupamento")
             
-            st.dataframe(novo_df, hide_index=True,)
+            # Mudar cor da letra se maior ou menor que 0
+            def change_color(val):
+                if isinstance(val, (int, float)):  
+                    color = 'red' if val < 0 else 'blue'
+                else:  
+                    color = 'black'
+                return f'color: {color}'
+            
+            styled_df = novo_df.style.applymap(change_color)
+
+            st.dataframe(styled_df)
+            #st.dataframe(novo_df, hide_index=True)
+            
 
             globals.table_list.append('table6')
             st.info(f'Tabela {len(globals.table_list)} - Influências Positivas e Negativas das Variáveis nos Grupos')  
+
 
         def secao4():
             #Criando as variáveis
