@@ -192,4 +192,5 @@ with tab2:
 with tab3:
     pagina_analise_por_grupos()
 with tab4:
+    relatorio_regioes()
     relatorio_municipios()

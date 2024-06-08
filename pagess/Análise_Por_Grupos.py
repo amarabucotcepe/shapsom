@@ -615,6 +615,6 @@ def pagina_analise_por_grupos():
 
     pagina_anomalias()
 
-    relatorio_regioes()
+ 
 
     
