@@ -395,13 +395,13 @@ def pagina_analise_por_grupos():
                     st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')  
                 
         def secao3():
-            st.subheader('*Seção 3 - Análise de agrupamentos*')
+            st.subheader('*Seção 3 - Análise de agrupamentos com SHAP*')
         
             st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
             
-            botaos3 = st.button('Gerar Análise de agrupamentos')
+            botaos3 = st.button('Gerar Análise de agrupamentos com SHAP')
             if botaos3:
                 #st.text(globals.som_data)
                 tabela_df = globals.shapsom_data.copy()
@@ -434,10 +434,13 @@ def pagina_analise_por_grupos():
                 # Mudar cor da letra se maior ou menor que 0
                 def change_color(val):
                     if isinstance(val, (int, float)):  
-                        color = 'red' if val < 0 else 'blue'
-                    else:  
-                        color = 'black'
-                    return f'color: {color}'
+                        if(val < 0):
+                            color = 'red'
+                        elif(val > 0):
+                            color = 'blue'
+                       # color = 'red' if val < 0 else 'blue'
+                    
+                        return f'color: {color}'
                 
                 styled_df = novo_df.style.applymap(change_color)
 
@@ -446,7 +449,7 @@ def pagina_analise_por_grupos():
                 
 
                 globals.table_list.append('table6')
-                st.info(f'Tabela {len(globals.table_list)} - Influências Positivas e Negativas das Variáveis nos Grupos') 
+                st.info(f'Tabela {len(globals.table_list)} - Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos') 
 
 
         def secao4():
