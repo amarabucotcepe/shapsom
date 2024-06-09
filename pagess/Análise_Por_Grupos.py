@@ -19,9 +19,9 @@ import weasyprint
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
-
+from sklearn import tree
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
 import matplotlib.pyplot as plt
 import globals
@@ -40,6 +40,7 @@ from pagess.Análise_Estatística_Exploratória import pagina_analise_estatistic
 from pagess.Anomalias import pagina_anomalias
 from pagess.Relatório_das_Regiões import relatorio_regioes
 from pagess.Relatório_dos_Municípios import relatorio_municipios
+
 
 # Set page configuration
 #st.set_page_config(layout='wide')
@@ -445,7 +446,56 @@ def pagina_analise_por_grupos():
                     st.pyplot(heatmap2.figure)
                     globals.graphic_list.append('graph2')
                     st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')  
+        
+        def arvore_decisao():
+            st.subheader('Arvore de Decisão')
+
+            st.markdown(''' Esta seção divide-se em duas partes: Primeiro, uma tabela que lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. Em seguida, a própria imagem da árvore de decisões. 
+                    ''')
+            
+            st.markdown(''' A importância de uma variável indica quanto ela contribui para a decisão final do modelo. Valores mais altos de importância sugerem que a variável tem um impacto maior na previsão do modelo. Dessa forma, quanto maior o valor
+                    de sua importância na tabela, maior a importância dessa variável em geral (desconsiderando agrupamentos). Da mesma forma, quanto mais alto ela estiver posicionada na Árvore de Decisão, maior sua importância.
+                    Lembrando que essa Árvore de Decisão mostra a importância das variáveis num contexto mais amplo e desconsidera a análise posterior utilizando agrupamentos.
+            ''')
+            botao_arvore = st.button('Gerar árvore de decisão')
+
+            if botao_arvore:
+                # Define the features and the target
+                X = df[df.columns[3:-1]]
+                y = df[df.columns[-1]]
+
+                # Split the data into training and test sets
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+                # Create a decision tree regressor and fit it to the training data
+                reg = DecisionTreeRegressor(max_depth=3, random_state=42)
+                reg.fit(X_train, y_train)
+
+                # Create a pandas DataFrame with feature importances
+                feature_importances = pd.DataFrame(reg.feature_importances_,
+                                                index = X.columns,
+                                                columns=['importance']).sort_values('importance', ascending=False)
+
+                st.dataframe(feature_importances, column_config={
+                    '': 'Variáveis',
+                    'importance': 'Importância'
+                })
+
+                st.info(f'Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
                 
+
+
+                # Create a larger figure
+                fig, ax = plt.subplots(figsize=(20, 20))
+
+                # Plot the decision tree with larger fonts
+                tree.plot_tree(reg, ax=ax, feature_names=X.columns, filled=True, fontsize=10)
+
+                # Show the plot in Streamlit
+                st.pyplot(fig)
+
+                st.info(f'Figura 2 - Árvore de Decisão')
+        
         def secao3():
             st.subheader('**Seção 3 - Análise de agrupamentos com SHAP**')
         
