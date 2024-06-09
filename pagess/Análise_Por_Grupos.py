@@ -15,6 +15,10 @@ import json
 from streamlit_folium import st_folium
 import matplotlib.colors as mcolors
 from streamlit_javascript import st_javascript
+import weasyprint
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import time
 
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
@@ -353,6 +357,54 @@ def pagina_analise_por_grupos():
                 return heatmap
         ###################################################################################
 
+        def gerar_df_shap():
+            tabela_df = globals.shapsom_data.copy()
+            tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
+
+                
+            tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
+
+            nome_variavel_coluna = 'Nome Variável'
+            grupos_colunas = sorted(tabela_unica['Grupo'].unique())
+            colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
+
+                
+            novo_df = pd.DataFrame(columns=colunas_novo_df)
+
+            for idx, nome_variavel in enumerate(globals.shap_columns):
+                novo_df.at[idx, 'Nome Variável'] = nome_variavel
+                for grupo in grupos_colunas:
+                    valores_grupo = tabela_unica.loc[tabela_unica['Grupo'] == grupo, 'SHAP Media Cluster'].values
+                    if len(valores_grupo) > 0 and len(valores_grupo[0]) > idx:
+                        novo_df.at[idx, f'Grupo {grupo}'] = valores_grupo[0][idx]
+                    else:
+                        novo_df.at[idx, f'Grupo {grupo}'] = None
+
+            return novo_df
+        
+        def html_to_png(html_file, output_png):
+            # Configuração do WebDriver (neste caso, estou usando o Chrome)
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            driver = webdriver.Chrome(options=chrome_options)
+            
+            driver.set_window_size(600, 350)
+
+            # Carrega o arquivo HTML no navegador
+            caminho_atual = os.getcwd()
+            caminho_html = os.path.join(caminho_atual, html_file)
+            driver.get("file:///" + caminho_html)
+
+            # Espera um pouco para garantir que o HTML seja totalmente carregado
+            time.sleep(2)
+
+            # Captura a tela e salva como um arquivo PNG
+            driver.save_screenshot(output_png)
+
+            # Fecha o navegador
+            driver.quit()
+    
+
         def secao2():
             st.subheader('**Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor**')
             st.markdown('''
@@ -395,7 +447,7 @@ def pagina_analise_por_grupos():
                     st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')  
                 
         def secao3():
-            st.subheader('*Seção 3 - Análise de agrupamentos com SHAP*')
+            st.subheader('**Seção 3 - Análise de agrupamentos com SHAP**')
         
             st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
@@ -403,35 +455,8 @@ def pagina_analise_por_grupos():
             
             botaos3 = st.button('Gerar Análise de agrupamentos com SHAP')
             if botaos3:
-                #st.text(globals.som_data)
-                tabela_df = globals.shapsom_data.copy()
-                tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
+                novo_df = gerar_df_shap()
 
-                
-                tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
-
-                nome_variavel_coluna = 'Nome Variável'
-                grupos_colunas = sorted(tabela_unica['Grupo'].unique())
-                colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
-
-                
-                novo_df = pd.DataFrame(columns=colunas_novo_df)
-
-                for idx, nome_variavel in enumerate(globals.shap_columns):
-                    novo_df.at[idx, 'Nome Variável'] = nome_variavel
-                    for grupo in grupos_colunas:
-                        valores_grupo = tabela_unica.loc[tabela_unica['Grupo'] == grupo, 'SHAP Media Cluster'].values
-                        if len(valores_grupo) > 0 and len(valores_grupo[0]) > idx:
-                            novo_df.at[idx, f'Grupo {grupo}'] = valores_grupo[0][idx]
-                        else:
-                            novo_df.at[idx, f'Grupo {grupo}'] = None
-                
-                #print(novo_df)
-                
-            
-                #novo_df = novo_df.style.set_caption("Tabela de atributos vs agrupamento")
-                
-                # Mudar cor da letra se maior ou menor que 0
                 def change_color(val):
                     if isinstance(val, (int, float)):  
                         if(val < 0):
@@ -472,10 +497,105 @@ def pagina_analise_por_grupos():
             output_column = original_df.columns[-1]
             output_values = original_df.iloc[:, -1]
             df_expandido[output_column] = output_values.values
+            novo_df = gerar_df_shap()
 
             grupos = df_expandido.groupby('Grupo')
 
-                    
+            html = f"""<!DOCTYPE html>
+            <html lang="en">
+                <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                @media print {{
+                @page {{
+                    margin-top: 1.5in;
+                    size: A4;
+                }}
+                }}
+
+                body {{
+                    font-family: "Helvetica";
+                    font-weight: bold;
+                    font-size: 12px;
+                }}
+
+                header {{
+                    text-align: left;
+                    margin-top: 0px; /* Espaço superior */
+                }}
+
+                .table-text {{
+                    text-align: justify; /* Alinha o texto com justificação */
+                    margin-bottom: 10px; /* Margem para alinhamento com as extremidades da página */
+                    font-size: 12px;
+                }}
+
+                /* Define o tamanho da tabela */
+                table {{
+                    width: 50vw; /* 50% da largura da viewport */
+                    height: calc(297mm / 2); /* Metade da altura de uma folha A4 */
+                    border: 1px solid black; /* Borda da tabela */
+                    border-collapse: collapse; /* Colapso das bordas da tabela */
+                }}
+                /* Estilo das células */
+                td, th {{
+                    border: 1px solid black; /* Borda das células */
+                    padding: 4px; /* Espaçamento interno das células */
+                    text-align: center; /* Alinhamento do texto */
+                    font-size: 12px; /* Tamanho da fonte */
+                }}
+
+
+                .mensagem {{
+                    text-align: center; /* Centraliza o texto */
+                }}
+
+                .texto-clusters {{
+                    font-size: 12px; /* Tamanho do texto */
+                }}
+
+                .evitar-quebra-pagina {{
+                    page-break-inside: avoid; /* Evita quebra de página dentro do bloco */
+                }}
+
+                .legenda-tabela {{
+                    font-size: 10px;
+                    font-style: italic;
+                    color: blue;
+                }}
+
+                .legenda-mapa {{
+                    font-size: 10px;
+                    font-style: italic;
+                    color: blue;
+                    page-break-after: always;
+                }}
+
+                </style>
+                </head>
+
+                <body>
+                <header>
+                    <h2>4. Diferenças entre agrupamentos</h2>
+                </header>
+                <p class="table-text">A análise comparativa entre os agrupamentos é conduzida combinando todas as informações 
+                        da "Análise de Agrupamentos" (Seção 3), organizando-as em uma disposição paralela. Isso tem o 
+                        objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.</p>
+
+                <div class="evitar-quebra-pagina">
+                </div>
+
+
+                ---===---
+
+
+                </body>
+
+                </html>
+                """
+
+            html_clusters = ''
             st.subheader('Seção 4 - Diferenças entre grupos')
             st.markdown('''A análise comparativa entre os agrupamentos é conduzida combinando todas as informações 
                         da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o 
@@ -493,7 +613,7 @@ def pagina_analise_por_grupos():
 
                         st.subheader(f'Grupo {i}')
                         st.text(f'Média de {output_column} do grupo {i}: {media_valor}')
-
+                    
                         def apply_color(val):
                             return f"background-color: {cor_grupo}; "
 
@@ -504,19 +624,37 @@ def pagina_analise_por_grupos():
                             'Cor': None
                             }             
                         )
+                        html_clusters += f'<h3 style="background-color: {cor_grupo}"> Grupo {i} </h3>'
+                        html_clusters += f'<p class="texto-clusters">{output_column} do Grupo {i}: {media_valor}</p>'
+                        html_clusters += f'<p class="texto-clusters">Cidades do cluster: {", ".join(sorted(set(grupo_df["municipios"])))}</p>'                     
 
                         globals.table_list.append(f'table{i+4}')
                         st.info(f"**Tabela {len(globals.table_list)} - Municípios do Grupo {i}**")
 
-                        # shap_values = []
-                        # coluna = f'Grupo {i}'
-                        # if coluna in df.columns:
-                        #     max_val = novo_df[coluna].max()
-                        #     min_val = novo_df[coluna].min()
-                        #     max_var = novo_df[df[coluna] == max_val]['nome variável'].values[0]
-                        #     min_var = novo_df[df[coluna] == min_val]['nome variável'].values[0]
-                        #     shap_values.append({'máximo valor': max_val, 'variável máximo': max_var, 'mínimo valor': min_val, 'variável mínimo': min_var})
-                        
+                        df_shap_grupo = novo_df.iloc[:, [0, i]]
+                        grupo_colunas = [col for col in df_shap_grupo.columns if col.startswith('Grupo')]
+                        # Lista para armazenar os resultados
+                        filtered_rows = []
+
+                        for coluna in grupo_colunas:
+                            max_val = df_shap_grupo[coluna].max()
+                            min_val = df_shap_grupo[coluna].min()
+                            
+                            max_row = df_shap_grupo[df_shap_grupo[coluna] == max_val]
+                            min_row = df_shap_grupo[df_shap_grupo[coluna] == min_val]
+                            
+                            filtered_rows.append(max_row)
+                            filtered_rows.append(min_row)
+
+                        # Concatenando todas as linhas filtradas
+                        filtered_df = pd.concat(filtered_rows).drop_duplicates().reset_index(drop=True)                        
+                        st.dataframe(filtered_df)
+                        globals.table_list.append(f'table2_{i+4}')
+                        st.info(f"**Tabela {len(globals.table_list)} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
+
+                        html_df = filtered_df.to_html(index=False)
+                        html_df += f'<p class="legenda-tabela"> Tabela {len(globals.table_list) - i} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}</p>'
+                        html_clusters += html_df
 
                         #Mapas
                         
@@ -543,12 +681,22 @@ def pagina_analise_por_grupos():
                         with st.spinner('Gerando mapa...'):
                             if os.path.exists(f'mapa{i}.html'):
                                 m_repr_html_ = open(f'mapa{i}.html').read()
-                                components.html(m_repr_html_, height=400)
+                                components.html(m_repr_html_, height=400)                                
                             else:
                                 generate_map()
-
+                                                        
                         globals.img_list.append(f'img{i+3}')
                         st.info(f"**Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}**")
+
+                        html_to_png(f'mapa{i}.html', f'mapa{i}.png')
+                        caminho_atual = os.getcwd()
+                        caminho_final = os.path.join(caminho_atual,f"mapa{i}.png")
+                        html_clusters += f'<img src="file:///{caminho_final}" alt="Screenshot">'
+                        html_clusters += f'<p class="legenda-mapa"> Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}</p>'                     
+                
+                html = html.replace('---===---', html_clusters)
+                path = os.path.join(f"secao3_4.pdf")
+                weasyprint.HTML(string=html).write_pdf(path)
 
         def secao5():
             st.subheader('**Seção 5 - Filtro de Triagem**')
