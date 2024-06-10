@@ -11,6 +11,7 @@ import time
 import branca.colormap as cm
 from branca.colormap import linear
 from PIL import Image
+import kaleido
 import folium
 import json
 from streamlit_folium import st_folium
@@ -217,7 +218,8 @@ def pagina_analise_estatistica_exploratoria():
         botao_estatisticas = st.button('Gerar tabela de estatísticas')
 
         if botao_estatisticas:
-            st.dataframe(dfmc[dfmc.columns[-1]].describe().to_frame().T, column_config={
+            dfmc = dfmc[dfmc.columns[-1]].describe().to_frame().T
+            st.dataframe(dfmc, column_config={
                 'count': 'Contagem',
                 'mean': 'Média',
                 'std': 'Desvio Padrão',
@@ -233,7 +235,7 @@ def pagina_analise_estatistica_exploratoria():
             html_clusters += '''<p> A tabela de estatísticas fornece um resumo estatístico descritivo da variável alvo para os municípios analisados. Os valores apresentados 
                     incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
                     (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios. </p>'''
-            html_df = dfmc.to_html(index=False)
+            html_df = dfmc.to_html()
             html_df += f'<p class="legenda-tabela"> Tabela 1 - Estatísticas Descritivas da Variável Alvo </p>'
             html_clusters += html_df
         
