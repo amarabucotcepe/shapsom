@@ -15,7 +15,6 @@ import folium
 import json
 from streamlit_folium import st_folium
 import weasyprint
-import kaleido
 import matplotlib.pyplot as plt
 import globals
 import plotly.graph_objects as go

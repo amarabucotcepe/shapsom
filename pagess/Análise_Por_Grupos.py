@@ -566,7 +566,7 @@ def pagina_analise_por_grupos():
 
 
         def arvore_decisao():
-            st.subheader('Arvore de Decisão')
+            st.subheader('Seção 3.2 - Análise de agrupamentos com Árvore de Decisão')
 
             st.markdown(''' Esta seção divide-se em duas partes: Primeiro, uma tabela que lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. Em seguida, a própria imagem da árvore de decisões.
                     ''')
@@ -575,12 +575,15 @@ def pagina_analise_por_grupos():
                     de sua importância na tabela, maior a importância dessa variável em geral (desconsiderando agrupamentos). Da mesma forma, quanto mais alto ela estiver posicionada na Árvore de Decisão, maior sua importância.
                     Lembrando que essa Árvore de Decisão mostra a importância das variáveis num contexto mais amplo e desconsidera a análise posterior utilizando agrupamentos.
             ''')
-            botao_arvore = st.button('Gerar árvore de decisão')
+            botao_arvore = st.button('Gerar análise de agrupamento com árvore de decisão')
 
             if botao_arvore:
+                df =  globals.current_database
                 # Define the features and the target
-                X = df[df.columns[3:-1]]
-                y = df[df.columns[-1]]
+                #X = df[df.columns[3:-1]]
+                #y = df[df.columns[-1]]
+                X = df[globals.current_input_columns]
+                y = df[globals.current_output_columns]
 
                 # Split the data into training and test sets
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -590,18 +593,27 @@ def pagina_analise_por_grupos():
                 reg.fit(X_train, y_train)
 
                 # Create a pandas DataFrame with feature importances
-                feature_importances = pd.DataFrame(reg.feature_importances_,
-                                                index = X.columns,
-                                                columns=['importance']).sort_values('importance', ascending=False)
+                # feature_importances = pd.DataFrame(reg.feature_importances_,
+                #                                 index = X.columns,
+                #                                 columns=['importance']).sort_values('importance', ascending=False)
+               
+                feature_importances = pd.DataFrame({
+                    "Variáveis": X.columns,
+                    "Importância": reg.feature_importances_
+                }).sort_values("Importância", ascending=False)
+                
 
-                st.dataframe(feature_importances, column_config={
-                    '': 'Variáveis',
-                    'importance': 'Importância'
-                })
+                # st.dataframe(feature_importances, column_config={
+                #     '': 'Variáveis',
+                #     'importance': 'Importância'
+                # })
+                st.dataframe(feature_importances)
 
-                st.info(f'Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
-
-
+                
+                globals.table_list.append('table2') 
+                texto_tabela = f'Importância das Variáveis no Modelo de Árvore de Decisão'
+                st.info(f"Tabela {globals.table_list.index('table2')+1} - {texto_tabela}")
+                #st.info(f'Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
 
                 # Create a larger figure
                 fig, ax = plt.subplots(figsize=(20, 20))
@@ -612,10 +624,15 @@ def pagina_analise_por_grupos():
                 # Show the plot in Streamlit
                 st.pyplot(fig)
 
-                st.info(f'Figura 2 - Árvore de Decisão')
+                globals.img_list.append('img2') 
+                texto_imagem = f'Árvore de Decisão'
+                st.info(f"Figura {globals.img_list.index('img2')+1} - {texto_imagem}")
+                #st.info(f"Figura 2 - Árvore de Decisão")
+                
+                gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
 
         def secao3():
-            st.subheader('**Seção 3 - Análise de agrupamentos com SHAP**')
+            st.subheader('**Seção 3.1 - Análise de agrupamentos com SHAP**')
 
             st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
@@ -642,9 +659,258 @@ def pagina_analise_por_grupos():
 
 
                 globals.table_list.append('table6')
-                st.info(f'Tabela {len(globals.table_list)} - Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos')
+                texto_tabela = f'Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos'
+                st.info(f'Tabela {len(globals.table_list)} - {texto_tabela}')
+                gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
+            
+            arvore_decisao()
+            
+        def gerar_pdf_3_1(styled_df: pd.DataFrame, nome_tabela, texto_tabela):
+            # Criando o esqueleto do HTML que irá formar o PDF
+            html = f"""<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+            @media print {{
+            @page {{
+                margin-top: 1.5in;
+                size: A4;
+            }}
+            }}
+
+            body {{
+                font-family: "Helvetica";
+                font-weight: bold;
+            }}
+
+            header {{
+                text-align: left
+                margin-top: 0px; /* Espaço superior */
+            }}
+
+            .table-text {{
+                text-align: justify; /* Alinha o texto com justificação */
+                margin-bottom: 10px; /* Margem para alinhamento com as extremidades da página */
+                font-size: 12px;
+            }}
+            
+            .legenda-tabela {{
+                font-size: 10px;
+                font-style: italic;
+                color:blue;
+            }}
+
+            /* Define o tamanho da tabela */
+            table {{
+                width: 50vw; /* 50% da largura da viewport */
+                height: calc(297mm / 2); /* Metade da altura de uma folha A4 */
+                border: 1px solid black; /* Borda da tabela */
+                border-collapse: collapse; /* Colapso das bordas da tabela */
+            }}
+            /* Estilo das células */
+            td, th {{
+                border: 1px solid black; /* Borda das células */
+                padding: 4px; /* Espaçamento interno das células */
+                text-align: center; /* Alinhamento do texto */
+                font-size: 12px; /* Tamanho da fonte */
+            }}
+
+            .mensagem {{
+                text-align: center; /* Centraliza o texto */
+            }}
+
+            .texto-clusters {{
+                font-size: 12px; /* Tamanho do texto */
+            }}
+
+            .evitar-quebra-pagina {{
+                page-break-inside: avoid; /* Evita quebra de página dentro do bloco */
+            }}
+
+            .container {{
+                text-align: center;
+                position: relative;
+                width: 500px;
+            height: 500px;
+            }}
+
+            .imagem-sobreposta {{
+                position: absolute;
+                bottom: 420px;
+                right: -180px;
+                width: 50px;
+                height: 50px;
+            }}
+
+            </style>
+            </head>
+
+            <body>
+            <header>
+                <h2>3. Análise dos agrupamentos</h2>
+            </header>
+            <h3> Análise dos agrupamentos com SHAP</h3>
+            <p class="table-text">Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
+            Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
+            "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias..</p>
+            
+            <div class="evitar-quebra-pagina">
+            *-*-*-*-*
+            
+            <p class="legenda-tabela">tabela_secao_3</p>
+            </div>
+
+            <div class="evitar-quebra-pagina">
+            <p class="mensagem">Mapa SOM completo</p>
+            ***
+            </div>
+            
+            </body>
+            </html>
+            """
+            
+            
+            tabela_df = globals.shapsom_data.copy()
+            tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
+            
+            html = html.replace('*-*-*-*-*', styled_df.to_html())
+            cores = tabela_unica["Cor Central"].tolist()
+           
+            for i in range(len(cores)):
+                html = html.replace(f'level0 col{i+1}"', f'level0 col{i+1}" style="background-color: {cores[i]}" ')
+        
+        
+            html = html.replace('tabela_secao_3', f"Tabela {globals.table_list.index(nome_tabela)+1} - {texto_tabela}")
+            path = os.path.join(f"secao3_3_1.pdf")
+            weasyprint.HTML(string=html).write_pdf(path)
+
+        def gerar_pdf_3_2(tabela_arvore_decisao, imagem_arvore_decisao):
+            # Criando o esqueleto do HTML que irá formar o PDF
+            html = f"""<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+            @media print {{
+            @page {{
+                margin-top: 1.5in;
+                size: A4;
+            }}
+            }}
+
+            body {{
+                font-family: "Helvetica";
+                font-weight: bold;
+            }}
+
+            header {{
+                text-align: left
+                margin-top: 0px; /* Espaço superior */
+            }}
+
+            .table-text {{
+                text-align: justify; /* Alinha o texto com justificação */
+                margin-bottom: 10px; /* Margem para alinhamento com as extremidades da página */
+                font-size: 12px;
+            }}
+            
+            .legenda-tabela {{
+                font-size: 10px;
+                font-style: italic;
+                color:blue;
+            }}
+
+            /* Define o tamanho da tabela */
+            table {{
+                width: 50vw; /* 50% da largura da viewport */
+                height: calc(297mm / 2); /* Metade da altura de uma folha A4 */
+                border: 1px solid black; /* Borda da tabela */
+                border-collapse: collapse; /* Colapso das bordas da tabela */
+            }}
+            /* Estilo das células */
+            td, th {{
+                border: 1px solid black; /* Borda das células */
+                padding: 4px; /* Espaçamento interno das células */
+                text-align: center; /* Alinhamento do texto */
+                font-size: 12px; /* Tamanho da fonte */
+            }}
+
+            .mensagem {{
+                text-align: center; /* Centraliza o texto */
+            }}
+
+            .texto-clusters {{
+                font-size: 12px; /* Tamanho do texto */
+            }}
+
+            .evitar-quebra-pagina {{
+                page-break-inside: avoid; /* Evita quebra de página dentro do bloco */
+            }}
+            
+            .a4-size {{
+                width: 210mm; /* Largura de uma folha A4 em milímetros */
+                height: auto; /* Altura proporcional */
+                max-width: 100%; /* Garante que a imagem não ultrapasse a largura da janela */
+            }}
 
 
+            </style>
+            </head>
+
+            <body>
+            <!--- *())*()* aqui vai ser caso n tenha o anterior--->
+            <h3> Análise de agrupamentos com Árvore de Decisão </h3>
+            <p class="table-text"> Esta seção divide-se em duas partes: Primeiro, uma tabela que lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. Em seguida, a própria imagem da árvore de decisões.<br>
+            
+            
+            
+            A importância de uma variável indica quanto ela contribui para a decisão final do modelo. Valores mais altos de importância sugerem que a variável tem um impacto maior na previsão do modelo. Dessa forma, quanto maior o valor
+            de sua importância na tabela, maior a importância dessa variável em geral (desconsiderando agrupamentos). Da mesma forma, quanto mais alto ela estiver posicionada na Árvore de Decisão, maior sua importância.
+            Lembrando que essa Árvore de Decisão mostra a importância das variáveis num contexto mais amplo e desconsidera a análise posterior utilizando agrupamentos.
+            
+            </p>
+            
+            <div class="evitar-quebra-pagina">
+            *-*-*-*-*
+            <p class="legenda-tabela">tabela_secao_3_2</p>
+            </div>
+
+            <div class="evitar-quebra-pagina">
+            ******
+            <p class="legenda-tabela">imagem_secao_3_2</p>
+            </div>
+
+            </body>
+            </html>
+            """
+            
+            # caso nao tiver a secao anterior de SHAP, colocar isso no inicio
+            # header_inicio = '''<header>
+            #    <h2>3. Análise dos agrupamentos</h2>
+            #    </header>'''
+            #tabela_arvore_decisao['dados'] = 
+            
+            try:
+                html = html.replace('*-*-*-*-*', tabela_arvore_decisao['dados'].to_html())
+                html = html.replace('tabela_secao_3_2', f"Tabela {globals.table_list.index(tabela_arvore_decisao['tabela_nome'])+1} - {tabela_arvore_decisao['tabela_texto']}")
+                
+                caminho_salvo = "arvore_decisao.png"
+                caminho_atual = os.getcwd()
+                caminho_final = os.path.join(caminho_atual,f"{caminho_salvo}")
+                imagem_arvore_decisao['dados'].savefig("arvore_decisao.png")
+                
+                html = html.replace('******', f'<img src="file:///{caminho_final}" alt="Árvore de decisão" class="a4-size">')
+                html = html.replace('imagem_secao_3_2', f"Imagem {globals.img_list.index(imagem_arvore_decisao['imagem_nome'])+1} - {imagem_arvore_decisao['imagem_texto']}")
+            except Exception as error:
+                print(error)
+            
+            path = os.path.join(f"secao3_3_2.pdf")
+            weasyprint.HTML(string=html).write_pdf(path)
+            
+            
         def secao4():
             #Criando as variáveis
 
