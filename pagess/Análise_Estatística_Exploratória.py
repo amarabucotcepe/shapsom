@@ -11,11 +11,11 @@ import time
 import branca.colormap as cm
 from branca.colormap import linear
 from PIL import Image
-import kaleido
 import folium
 import json
 from streamlit_folium import st_folium
 import weasyprint
+import kaleido
 import matplotlib.pyplot as plt
 import globals
 import plotly.graph_objects as go
@@ -162,9 +162,8 @@ def pagina_analise_estatistica_exploratoria():
                     enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
                     intervenções mais intensivas, ajudando a direcionar políticas públicas e recursos de forma mais eficiente.''')
 
-        botao_mapa = st.button('Gerar mapa')
-        
-        if botao_mapa:
+                
+        with st.expander('Visualizar mapa'):
             def generate_map():
                 # Convert the DataFrame to a GeoDataFrame
                 gdf = gpd.read_file('PE_Municipios_2022.zip')
@@ -191,16 +190,16 @@ def pagina_analise_estatistica_exploratoria():
 
             st.info(f'Figura 1 - Mapa Colorido Baseado na Variação de Valores da Variável Alvo.')
 
-        html_to_png(f'mapa.html', f'mapa.png')
-        caminho_atual = os.getcwd()
-        caminho_mapa = os.path.join(caminho_atual,f"mapa.png")
-        html_clusters += '<h3> Mapa de Análise de Variável </h3>'
-        html_clusters += '''<p> O mapa de análise da variável alvo apresenta uma análise geoespacial dos municípios do estado de Pernambuco. As diferentes tonalidades de cores no 
-                                mapa representam as variações nos níveis da variável de escolha. As áreas em tons mais escuros indicam um desempenho superior, 
-                                enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
-                                intervenções mais intensivas, ajudando a direcionar políticas públicas e recursos de forma mais eficiente. </p>'''
-        html_clusters += f'<img src="file:///{caminho_mapa}" alt="Screenshot">'
-        html_clusters += f'<p class="legenda-mapa"> Figura 1 - Mapa Colorido Baseado na Variação de Valores da Variável Alvo </p>' 
+            html_to_png(f'mapa.html', f'mapa.png')
+            caminho_atual = os.getcwd()
+            caminho_mapa = os.path.join(caminho_atual,f"mapa.png")
+            html_clusters += '<h3> Mapa de Análise de Variável </h3>'
+            html_clusters += '''<p> O mapa de análise da variável alvo apresenta uma análise geoespacial dos municípios do estado de Pernambuco. As diferentes tonalidades de cores no 
+                                    mapa representam as variações nos níveis da variável de escolha. As áreas em tons mais escuros indicam um desempenho superior, 
+                                    enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
+                                    intervenções mais intensivas, ajudando a direcionar políticas públicas e recursos de forma mais eficiente. </p>'''
+            html_clusters += f'<img src="file:///{caminho_mapa}" alt="Screenshot">'
+            html_clusters += f'<p class="legenda-mapa"> Figura 1 - Mapa Colorido Baseado na Variação de Valores da Variável Alvo </p>' 
         
         st.divider()
 
@@ -214,11 +213,10 @@ def pagina_analise_estatistica_exploratoria():
                     incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
                     (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios.''')
         
-        botao_estatisticas = st.button('Gerar tabela de estatísticas')
-
-        if botao_estatisticas:
-            dfmc = dfmc[dfmc.columns[-1]].describe().to_frame().T
-            st.dataframe(dfmc, column_config={
+        
+        with st.expander('Visualizar Estatísticas'):
+            dfmc_copy = dfmc[dfmc.columns[-1]].describe().to_frame().T
+            st.dataframe(dfmc_copy, column_config={
                 'count': 'Contagem',
                 'mean': 'Média',
                 'std': 'Desvio Padrão',
@@ -234,7 +232,7 @@ def pagina_analise_estatistica_exploratoria():
             html_clusters += '''<p> A tabela de estatísticas fornece um resumo estatístico descritivo da variável alvo para os municípios analisados. Os valores apresentados 
                     incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
                     (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios. </p>'''
-            html_df = dfmc.to_html()
+            html_df = dfmc_copy.to_html(index=False)
             html_df += f'<p class="legenda-tabela"> Tabela 1 - Estatísticas Descritivas da Variável Alvo </p>'
             html_clusters += html_df
         
@@ -246,9 +244,8 @@ def pagina_analise_estatistica_exploratoria():
                         apresentam desempenhos extremos, tanto positivos quanto negativos, e como os valores da nossa variável alvo estão dispersos
                         em relação à media. Esta visualização facilita uma identificação mais superficial das áreas que necessitam de maior atenção e recursos.''')
         
-        botao_grafico_dispersao = st.button('Gerar gráfico de dispersão')
-
-        if botao_grafico_dispersao:
+        
+        with st.expander('Visualizar Gráfico de Dispersão'):
             opcoes = df.columns[3:-1].tolist()
             variavel = st.selectbox('Selecione a variável', opcoes, index= len(opcoes)-1)
             nome_variavel_padrao = df.columns[-2]
