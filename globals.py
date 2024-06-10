@@ -26,3 +26,6 @@ som_chart = None
 crunched_df = None
 shape_results = {}
 current_list_labels = [] 
+table_list = []
+graphic_list = []
+img_list = []

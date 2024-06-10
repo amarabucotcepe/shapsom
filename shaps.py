@@ -56,8 +56,7 @@ def make_shap(labels, variable_columns, x, y, use_shap, desc="Gerando gráficos 
     globals.shap_data['columns'] = globals.shap_columns
     globals.shap_data['explanations'] = globals.shap_explanations
     
-    if use_shap:
-        for i, exp in tqdm(enumerate(globals.shap_explanations), desc=desc, total=len(globals.shap_explanations)):
-            globals.shape_results[labels[i]] = {}
-            globals.shape_results[labels[i]]['data'] = exp.data.copy()
-            globals.shape_results[labels[i]]['values'] = exp.values.copy()
+    for i, exp in tqdm(enumerate(globals.shap_explanations), desc=desc, total=len(globals.shap_explanations)):
+        globals.shape_results[labels[i]] = {}
+        globals.shape_results[labels[i]]['data'] = exp.data.copy()
+        globals.shape_results[labels[i]]['values'] = exp.values.copy()

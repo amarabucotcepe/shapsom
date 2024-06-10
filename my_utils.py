@@ -108,7 +108,7 @@ def get_som_data(som: MiniSom, labels, x, y, cluster_distance) -> pd.DataFrame:
             cell_scores.append(cell_score)
             score_dict = {}
             for score_type in y.columns[1:]:
-                data = [y.loc[y['label'] == u, score_type].values[0] for u in cell_labels]
+                data = [y.loc[y['label'] == u, y.columns[-1]].values[0] for u in cell_labels]
                 score_dict[score_type] = data
             coord_dict[c] = {"labels": cell_labels, "score": score_dict,"scores": score_data, "variables": variables, "cell_score": cell_score, "cluster": i}
     
