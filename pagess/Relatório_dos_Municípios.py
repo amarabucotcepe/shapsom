@@ -17,30 +17,32 @@ global shap_columns
 global cluster_dict
 
 def relatorio_municipios():
-    st.subheader('Seção 8 - Relatório Individual dos Municípios 🏙️')
+    st.divider()
+    st.subheader('Seção 8 - Relatório Individual dos Municípios')
 
     list_all_labels = [m for m in globals.shape_results.keys()]
 
     with st.form("form"):
         st.subheader("Selecione os Municípios")
         list_selected_labels = st.multiselect("Municípios", list_all_labels, help='Selecione os municípios para gerar os relatórios individuais de cada um deles', key="my_multiselect")
-        use_mark_all = st.checkbox("Selecionar Todos", help="Selecione para marcar todos os municípios")
-        st.markdown('Para usar essa funcionalidade é necessário que a opção "Incluir Análise Individual dos Municípios" esteja Ativada.')
+        use_mark_all = st.checkbox("Selecionar Todos", help="Selecione para gerar o relatório de todos os municípios")
         button = st.form_submit_button('Executar')
 
     if button:
-        if globals.use_shap:
-            globals.current_list_labels = list_all_labels if use_mark_all else list_selected_labels
-            gerar_anexos()
-        else:
-            st.markdown('A opção "Incluir Análise Individual dos Municípios" está Desativada, por favor execute novamente com esta opção Ativa.')
-
+        globals.current_list_labels = list_all_labels if use_mark_all else list_selected_labels
+        gerar_anexos()
 
 def gerar_anexos():
     pdf_filenames = []
+    st.divider()
     st.write("#### Relatórios Individuais")
     progress_bar = st.progress(0)
     total_iterations = len(globals.current_list_labels) 
+    # Caminho da pasta para salvar os PDFs
+    save_path = "Relatório dos Municípios"
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
     for i, municipio in tqdm(enumerate(globals.current_list_labels), desc="Gerando Anexos", total=total_iterations, unit="it/s"):
         progress_bar.progress(int((i + 1) / total_iterations * 100))
         with st.expander(municipio, expanded=False):
@@ -84,6 +86,7 @@ def gerar_anexos():
             table1 +=  '</td>'
             table1 +=  '</tr>'
             table1 +=  '</table>'
+            table1 += f"<p class='legenda-tabela'> Tabela 8.{4*i + 1} - Impacto dos Fatores na Taxa de {dados['feature']} </p>"
 
             table2 = '<table style="margin-left: auto; margin-right: auto; margin-top: 60px; width: 627px; border: 2px solid grey;">'
             table2 += '<caption style="color: #8B4513; caption-side: top; border: 2px solid grey; text-align: center; font-weight: bold; font-size: 23px; padding: 10px 0;"> Fatores que Mais Influenciaram </caption>'
@@ -100,11 +103,11 @@ def gerar_anexos():
             menores_valores = [v for v in sorted(values)[:numero_atributos] if v < 0]
             indices_maiores_valores = {}
             indices_menores_valores = {}
-            for i, v in enumerate(values):
-                if v in maiores_valores and i not in indices_maiores_valores:
-                    indices_maiores_valores[i] = v
-                elif v in menores_valores and i not in indices_menores_valores:
-                    indices_menores_valores[i] = v
+            for id, v in enumerate(values):
+                if v in maiores_valores and id not in indices_maiores_valores:
+                    indices_maiores_valores[id] = v
+                elif v in menores_valores and id not in indices_menores_valores:
+                    indices_menores_valores[id] = v
             indices_maiores_valores = dict(sorted(indices_maiores_valores.items(), key=lambda item: item[1]))
             indices_menores_valores = dict(sorted(indices_menores_valores.items(), key=lambda item: item[1], reverse=True))
 
@@ -118,6 +121,7 @@ def gerar_anexos():
                 table2 += f'<td style="color: red; width:10%; border: 1px solid grey;">' + (f'{valor_menor:.3f}' if valor_menor is not None else "---") + '</td>'
                 table2 += '</tr>'
             table2 += '</table>'
+            table2 += f'<p class="legenda-tabela"> Tabela 8.{4*i + 2} - Principais Fatores de Influência </p>'
 
             score_municipio = dados['scores'][dados['labels'].index(municipio)]
             table3 =   '<table style="margin-left: auto; margin-right: auto; margin-top: 60px; width: 627px; border: 2px solid grey;">'
@@ -141,6 +145,7 @@ def gerar_anexos():
             table3 +=  '</td>'
             table3 +=  '</tr>'
             table3 += '</table>'
+            table3 += f"<p class='legenda-tabela'> Tabela 8.{4*i + 3} - Comparação da {dados['feature']} entre o Município e o seu Grupo </p>"
 
             cell_labels = [label for label in dados['labels'] if label != municipio]
             cell_labels.sort()
@@ -165,6 +170,7 @@ def gerar_anexos():
             table4 +=   ' <td colspan="2" style="font-size:15px; text-align: center;"> OBS: A <i>PROXIMIDADE</i> ENVOLVE O <span style="color:#00FFFF;">CONJUNTO TOTAL</span> DOS FATORES E SUAS SEMELHANÇAS, AO INVÉS DE QUESTÕES GEOGRÁFICAS. </td>'
             table4 +=   '</tr>'
             table4 +=   '</table>'
+            table4 += f'<p class="legenda-tabela"> Tabela 8.{4*i + 4} - Municípios Mais Semelhantes a {municipio} </p>'
 
             html = f"""{table1}
                        {table2}
@@ -183,18 +189,25 @@ def gerar_anexos():
                                             size: Letter;
                                         }}
                                     }}
+                                    .legenda-tabela {{
+                                        font-family: "Arial"
+                                        font-size: 20px;
+                                        font-style: italic;
+                                        color: blue;
+                                    }}
                                 </style>
                             </head>
                             <body> {html} </body>
                             </html>"""
 
+
             # Salvar o HTML em um arquivo temporário
-            filename = "temp.html"
+            filename = os.path.join(save_path, "temp.html")
             with open(filename, "w") as f:
                 f.write(html_pdf)
 
             # Converter o HTML em PDF usando WeasyPrint
-            pdf_filename = f'{municipio}.pdf'
+            pdf_filename = os.path.join(save_path, f'{municipio}.pdf')
             HTML(filename).write_pdf(pdf_filename)
             add_cabecalho(pdf_filename)
 
@@ -214,7 +227,7 @@ def gerar_anexos():
             os.remove(filename)
 
     # Criar um arquivo zip
-    zip_filename = 'Anexos.zip'
+    zip_filename = os.path.join(save_path, 'Anexos.zip')
     with zipfile.ZipFile(zip_filename, "w") as zipf:
         # Adicionar cada arquivo PDF ao arquivo zip
         for pdf_file in pdf_filenames:
@@ -224,10 +237,14 @@ def gerar_anexos():
     with open(zip_filename, "rb") as f:
         zip_contents = f.read()
     b64 = base64.b64encode(zip_contents).decode()
-    st.sidebar.write('#### Anexos')
+    st.sidebar.divider()
+    st.sidebar.title('Anexos', help="Clique no botão abaixo para baixar os relatórios de todos os municípios selecionados")
     st.sidebar.markdown(f'<a href="data:application/zip;base64,{b64}" download="Anexos.zip"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Download ZIP</button></a>', unsafe_allow_html=True)
 
-    # Remove a pasta e o arquivo zip
+    # Remove os PDFs e o arquivo zip
     for pdf_file in pdf_filenames:
         os.remove(pdf_file)
     os.remove(zip_filename)
+
+    # Remover a pasta
+    os.rmdir(save_path)

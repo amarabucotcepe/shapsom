@@ -17,13 +17,8 @@ from pagess.Anomalias import pagina_anomalias
 from pagess.Relatório_das_Regiões import relatorio_regioes
 from pagess.Relatório_dos_Municípios import relatorio_municipios
 
-
 imagem = Image.open('pixelcut-export.png')
 st.image(imagem, use_column_width=True)
-
-globals.table_list = []
-globals.graphic_list = []
-globals.img_list = []
 
 def pagina_inicial():
     
@@ -70,6 +65,9 @@ def pagina_inicial():
         st.markdown("Caso não queira modificar as colunas selecionadas por padrão, clique no botão 'Confirmar Colunas' e o seu Mapa SOM será gerado automaticamente.")
         choose_columns = st.button("**Confirmar Colunas**")
         if choose_columns:
+            globals.table_list = []
+            globals.graphic_list = []
+            globals.img_list = []
             globals.som_chart = None
             globals.file_uploaded_start_flag = True
 
@@ -173,7 +171,7 @@ def pagina_inicial():
                 globals.som.altair_chart(globals.som_chart, use_container_width=True)
         
         global use_shap
-        globals.use_shap = st.checkbox("Incluir Análise Individual dos Municípios", help='Selecione para obter, ao fim da execução, uma análise completa dos municípios de sua escolha individualmente')
+        # globals.use_shap = st.checkbox("Incluir Análise Individual dos Municípios", help='Selecione para obter, ao fim da execução, uma análise completa dos municípios de sua escolha individualmente')
 
         submit_button = st.button('**Finalizar agrupamentos**')
         
@@ -184,7 +182,7 @@ def pagina_inicial():
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3, tab4= st.tabs(["Aquisição de Dados e Parametrização", "Análise Estatística Exploratória", "Análise Por Grupos", 'Relatórios Individuais'])
+tab1, tab2, tab3, tab4= st.tabs(["Aquisição de Dados e Parametrização", "Análise Estatística Exploratória", "Análise Por Grupos", 'Relatórios'])
 with tab1:
    pagina_inicial()
 with tab2:
