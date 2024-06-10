@@ -12,6 +12,17 @@ from PIL import Image
 import re
 import folium
 import json
+import PIL
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import Paragraph
+from reportlab.lib.utils import ImageReader
+from pypdf import PdfMerger
+import math
 from streamlit_folium import st_folium
 import matplotlib.colors as mcolors
 from streamlit_javascript import st_javascript
@@ -70,10 +81,10 @@ def pagina_analise_por_grupos():
             filepath = f'mapa{i}.html'
             if os.path.exists(filepath):
                 os.remove(filepath)
-                     
-        def secao1():  
+
+        def secao1():
             st_theme = st_javascript("""window.getComputedStyle(window.parent.document.getElementsByClassName("stApp")[0]).getPropertyValue("color-scheme")""")
-          
+
             def verificarColunaDesc(database):
                 nStrings = 0
                 for i in range(database.shape[1]):
@@ -85,7 +96,7 @@ def pagina_analise_por_grupos():
                     return True
                 else:
                     return False
-        
+
             def convert_numeric(x):
                 try:
                     if float(x).is_integer():
@@ -100,7 +111,7 @@ def pagina_analise_por_grupos():
             your_timezone = pytz.timezone('America/Recife')
             current_time_local = current_time_utc.replace(tzinfo=pytz.utc).astimezone(your_timezone)
             formatted_date = current_time_local.strftime("%d/%m/%Y")
-        
+
             if(globals.current_database is not None):
                 # Gerar base de dados sem descrição completa
                 if(verificarColunaDesc(globals.original_database)):
@@ -206,7 +217,7 @@ def pagina_analise_por_grupos():
 
                 if(globals.original_database.shape!=analyzed_database.shape):
                     descDados = np.array(globals.original_database.iloc[0])
-                
+
                 # Número das variáveis
 
                 numDados = []
@@ -237,8 +248,8 @@ def pagina_analise_por_grupos():
                     if(len(data)>every):
                         data = insert_newlines(data, every=every)
                     return data
-                
-        
+
+
                 # Geração do dicionário de dados
                 if(len(descDados)==0):
                     dicionarioDados = np.array([numDados,nomesDados,tiposDados]).tolist()
@@ -262,10 +273,10 @@ def pagina_analise_por_grupos():
                     dicionarioDados.columns = ['Fator','Nome da coluna','Tipo de dado']
                 else:
                     dicionarioDados.columns = ['Fator','Nome da coluna','Descrição do dado','Tipo de dado']
-                
+
             def gerarEspaco():
                 st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
-            
+
 
             st.subheader('Seção 1 - Descrição do arquivo de entrada')
             if( globals.current_database is None):
@@ -282,7 +293,7 @@ def pagina_analise_por_grupos():
                     st.write(textoDicionario)
 
                     custom_css = """
-                    
+
                     <style>
                     thead th {
                         background-color: #717171;
@@ -291,7 +302,7 @@ def pagina_analise_por_grupos():
                     </style>
                     """
                     st.markdown(custom_css, unsafe_allow_html=True)
-                    
+
 
                     if( globals.current_database is not None):
                         st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
@@ -303,7 +314,7 @@ def pagina_analise_por_grupos():
 
                     st.write('#### 1.2 Parâmetros de Treinamento')
                     gerarEspaco()
-                    
+
                     st.write('Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:')
                     param_treino = [
                         "Topologia: "+str(globals.topology),
@@ -311,11 +322,11 @@ def pagina_analise_por_grupos():
                         f"Épocas: "+str(globals.epochs),
                         f"Tamanho do mapa: "+str(globals.size),
                         f"Sigma: "+str(globals.sigma),
-                        f"Taxa de aprendizado: "+str(globals.lr)    
+                        f"Taxa de aprendizado: "+str(globals.lr)
                     ]
                     for item in param_treino:
                         st.write(f"- {item}")
-                    
+
                     #if(globals.current_output_columns != []):
                     #    gerarEspaco()
                     #    st.write('#### 1.3 Parâmetros de Triagem')
@@ -332,44 +343,18 @@ def pagina_analise_por_grupos():
                     #        st.write(f"- {item}")
                     #    gerarEspaco()
 
-        ##############################################################################
-        # FUNÇÕES AUXILIARES PARA AS SEÇÕES 2 E 5
-        def formatDf(df):
-            formated_df = df.drop(columns=['Município'])
-            nums_columns = list(range(1, len(formated_df.columns) + 1))
-            formated_df.columns = nums_columns
-        
-            return formated_df
-            
-        def generate_heatmap(data, cmap):
-                largura, altura = data.shape
-                sns.set_theme()
-                plt.figure(figsize=(altura/9.15 ,largura/7)) 
-                heatmap =sns.heatmap(data,
-                    annot=False,
-                    cmap=cmap,
-                    square=True,
-                    vmin=0,
-                    vmax = 1, 
-                    cbar_kws={'orientation': 'vertical'}
-                    
-                    )
-                
-                return heatmap
-        ###################################################################################
-
         def gerar_df_shap():
             tabela_df = globals.shapsom_data.copy()
             tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
 
-                
+
             tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
 
             nome_variavel_coluna = 'Nome Variável'
             grupos_colunas = sorted(tabela_unica['Grupo'].unique())
             colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
 
-                
+
             novo_df = pd.DataFrame(columns=colunas_novo_df)
 
             for idx, nome_variavel in enumerate(globals.shap_columns):
@@ -382,13 +367,13 @@ def pagina_analise_por_grupos():
                         novo_df.at[idx, f'Grupo {grupo}'] = None
 
             return novo_df
-        
+
         def html_to_png(html_file, output_png):
             # Configuração do WebDriver (neste caso, estou usando o Chrome)
             chrome_options = Options()
             chrome_options.add_argument("--headless")
             driver = webdriver.Chrome(options=chrome_options)
-            
+
             driver.set_window_size(600, 350)
 
             # Carrega o arquivo HTML no navegador
@@ -404,24 +389,156 @@ def pagina_analise_por_grupos():
 
             # Fecha o navegador
             driver.quit()
-    
+
+        ##############################################################################
+        # FUNÇÕES AUXILIARES PARA AS SEÇÕES 2 E 5
+        def formatDf(df):
+            formated_df = df.drop(columns=['Município'])
+            nums_columns = list(range(1, len(formated_df.columns) + 1))
+            formated_df.columns = nums_columns
+
+            return formated_df
+
+        def generate_heatmap(data, cmap):
+                largura, altura = data.shape
+                sns.set_theme()
+                plt.figure(figsize=(altura/9.15 ,largura/7))
+                heatmap =sns.heatmap(data,
+                    annot=False,
+                    cmap=cmap,
+                    square=True,
+                    vmin=0,
+                    vmax = 1,
+                    cbar_kws={'orientation': 'vertical'}
+
+                    )
+
+                return heatmap
+
+        def gerar_pdf_secao2e5(filename : str, titulo: str, text_data, filtro_min=0.0, filtro_max=500):
+            image_filenames = []
+            numeric_cols = list(globals.crunched_df.select_dtypes(include=['float64', 'int64']).columns)
+            max_rows = math.ceil(len(globals.crunched_df)/ 3)
+            candidate_rows = np.array(list(globals.crunched_df[list(globals.crunched_df.columns)[-1]].values))
+            indexes = np.where((candidate_rows >= filtro_min/100) & (candidate_rows <= filtro_max/100))[0].tolist()
+
+            partitions = [indexes[i:i+max_rows] for i in range(0, len(indexes), max_rows)]
+
+            # gerando heatmaps das Médias
+            avg_imagens = []
+            for partition in partitions:
+                _titulo = f'Médias {partition[0]+1}-{partition[-1]+1}'
+                df_media_filtrado = globals.crunched_df.iloc[partition]
+                df_media_filtrado_formatado = formatDf(df_media_filtrado)
+                heatmap_media = generate_heatmap(df_media_filtrado_formatado, 'YlOrRd')
+                heatmap_media.figure.savefig(f'{_titulo}.png', bbox_inches='tight', pad_inches=0.05)
+                avg_imagens.append(PIL.Image.open(f'{_titulo}.png'))
+                image_filenames.append(f'{_titulo}.png')
+
+
+            # gerando heatmaps dos Desvios Padrão
+            std_imagens = []
+            for partition in partitions:
+                _titulo = f'Desvios Padrão {partition[0]+1}-{partition[-1]+1}'
+                df_dp_filtrado = globals.crunched_std.iloc[partition]
+                df_dp_filtrado_formatado = formatDf(df_dp_filtrado)
+                heatmap_dp = generate_heatmap(df_dp_filtrado_formatado, 'gray')
+                heatmap_dp.figure.savefig(f'{_titulo}.png', bbox_inches='tight', pad_inches=0.05)
+                std_imagens.append(PIL.Image.open(f'{_titulo}.png'))
+                image_filenames.append(f'{_titulo}.png')
+
+            h_percentages = [len(p) / max_rows for p in partitions]
+            page_data = [[a,b,hp] for a,b,hp in list(zip(avg_imagens, std_imagens, h_percentages))]
+            page_data = [page_data[:1]] + [page_data[1:][i:i+2] for i in range(0, len(page_data[1:]), 2)]
+            tempfiles = [f"temp_page_{i}.pdf" for i in range(len(page_data))]
+
+            # Iterando pelas páginas
+            for i,pg in enumerate(page_data):
+                init_offset = 65
+                c = canvas.Canvas(tempfiles[i])
+                page_w, page_h = letter
+
+                # Cabeçalho
+                c.drawImage('cabecalho.jpeg', inch-8, page_h-50,page_w-inch-52,50)
+
+                if i == 0:
+                    init_offset = (inch*1.2)
+
+                    # Título
+                    message = Paragraph(titulo, ParagraphStyle(titulo, fontName="helvetica-Bold", fontSize=16))
+                    w, h = message.wrap(page_w, page_h)
+                    message.drawOn(c, inch, page_h-65)
+
+                    for _text, _style in text_data:
+                        if _text:
+                            t = Paragraph(_text, ParagraphStyle(_text, fontName=f"helvetica{_style}", fontSize=12))
+                            w, h = t.wrap(page_w, page_h)
+                            t.drawOn(c, inch, page_h-init_offset)
+                        init_offset += 12
+
+                # Adicionando as imagens
+                acc_offset = 0
+                for a,b,hp in pg:
+                    w,h = a.size
+                    desired_h = 4.75 * inch * hp
+                    desired_w = 4.5 * inch * min(len(numeric_cols), 32) / 45
+                    spacing_x = 0.25 * inch
+                    x_offset = (page_w - 2 * desired_w) / 2
+                    y_offset = page_h - desired_h - init_offset - acc_offset
+                    acc_offset += desired_h * 1.0625
+                    c.drawImage(ImageReader(a), x_offset-(spacing_x/2), y_offset, width=desired_w, height=desired_h)
+                    c.drawImage(ImageReader(b), x_offset+desired_w+(spacing_x/2), y_offset, width=desired_w, height=desired_h)
+                c.save()
+
+            # Juntando páginas
+            merger = PdfMerger()
+            for t in tempfiles:
+                merger.append(t)
+            merger.write(filename)
+            merger.close()
+
+            # Limpando arquivos gerados
+            for f in image_filenames + tempfiles:
+                os.remove(f)
+        ###################################################################################
 
         def secao2():
             st.subheader('**Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor**')
             st.markdown('''
-                        Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média  
-                        (*Gráfico 1*) e desvio padrão (*Gráfico 2*) dos fatores disponibilizados para cada um dos municípios.  
+                        Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para a média
+                        (*Gráfico 1*) e desvio padrão (*Gráfico 2*) dos fatores disponibilizados para cada um dos municípios.
                         Mapa de Calor, também conhecido como Heatmap, é uma visualização gráfica que usa cores para representar a intensidade dos valores
-                        em uma matriz de dados. Cada célula da matriz é colorida de acordo com seu valor, facilitando a identificação de 
-                        padrões, tendências e anomalias nos dados.  
-                        **Média**: É a soma de todos os valores de um conjunto dividida pelo número de valores. 
-                        Representa o valor médio  
-                        **Desvio padrão**: Mede a dispersão dos valores em relação à média. Mostra o quanto os valores variam da média. 
+                        em uma matriz de dados. Cada célula da matriz é colorida de acordo com seu valor, facilitando a identificação de
+                        padrões, tendências e anomalias nos dados.
+                        **Média**: É a soma de todos os valores de um conjunto dividida pelo número de valores.
+                        Representa o valor médio
+                        **Desvio padrão**: Mede a dispersão dos valores em relação à média. Mostra o quanto os valores variam da média.
                         ''')
             st.markdown('''Importante:
                         Nos gráficos referentes aos Mapas de Calor:
                         As linhas representam os municípios, que estão em ordem alfabética;
                         As colunas representam os fatores selecionados pelo usuário na base de dados''')
+
+            text_secao2 = [
+                ("Esta seção traz uma análise visual da base de dados, fornecendo mapas de calor para", ""),
+                ("a média (Gráfico 1) e desvio padrão (Gráfico 2) dos fatores disponibilizados para cada ",""),
+                ("um dos municípios.",""),
+                ("Mapa de Calor, também conhecido como Heatmap, é uma visualização gráfica que usa",""),
+                ("cores para representar a intensidade dos valores em uma matriz de dados. Cada célula",""),
+                ("da matriz é colorida de acordo com seu valor, facilitando a identificação de padrões,",""),
+                ("tendências e anomalias nos dados.",""),
+                (" ",""),
+                ("Média: ","-Bold"),
+                ("- É a soma de todos os valores de um conjunto dividida pelo número de valores.",""),
+                ("Representa o valor médio.",""),
+                ("Desvio padrão: ","-Bold"),
+                ("- Mede a dispersão dos valores em relação à média. Mostra o quanto os valores",""),
+                ("variam da média.",""),
+                ("",""),
+                ("Importante:", "-Bold"),
+                ("Nos gráficos referentes aos Mapas de Calor:", ""),
+                ("As linhas representam os municípios, que estão em ordem alfabética;", ""),
+                ("As colunas representam os fatores selecionados pelo usuário na base de dados;", "")]
             botaos2 = st.button('Gerar Visão Geral de Dados e Mapas de Calor')
             if botaos2:
                 col1, col2 = st.columns(2)
@@ -430,29 +547,30 @@ def pagina_analise_por_grupos():
                     st.dataframe(globals.crunched_df)
                     globals.table_list.append('table4')
                     st.info(f"**Tabela {len(globals.table_list)} - Média**")
-
                     heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                     st.pyplot(heatmap1.figure)
                     globals.graphic_list.append('graph1')
                     st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) da Média dos Dados dos Municípios')
-                
+
                 with col2:
                     crunched_std = formatDf(globals.crunched_std)
                     st.dataframe(globals.crunched_std)
                     globals.table_list.append('table5')
                     st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
-                    
                     heatmap2 = generate_heatmap(crunched_std, 'gray')
                     st.pyplot(heatmap2.figure)
                     globals.graphic_list.append('graph2')
-                    st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')  
-        
+                    st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')
+
+                gerar_pdf_secao2e5("secao2.pdf","Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor", text_secao2)
+
+
         def arvore_decisao():
             st.subheader('Arvore de Decisão')
 
-            st.markdown(''' Esta seção divide-se em duas partes: Primeiro, uma tabela que lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. Em seguida, a própria imagem da árvore de decisões. 
+            st.markdown(''' Esta seção divide-se em duas partes: Primeiro, uma tabela que lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. Em seguida, a própria imagem da árvore de decisões.
                     ''')
-            
+
             st.markdown(''' A importância de uma variável indica quanto ela contribui para a decisão final do modelo. Valores mais altos de importância sugerem que a variável tem um impacto maior na previsão do modelo. Dessa forma, quanto maior o valor
                     de sua importância na tabela, maior a importância dessa variável em geral (desconsiderando agrupamentos). Da mesma forma, quanto mais alto ela estiver posicionada na Árvore de Decisão, maior sua importância.
                     Lembrando que essa Árvore de Decisão mostra a importância das variáveis num contexto mais amplo e desconsidera a análise posterior utilizando agrupamentos.
@@ -482,7 +600,7 @@ def pagina_analise_por_grupos():
                 })
 
                 st.info(f'Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
-                
+
 
 
                 # Create a larger figure
@@ -495,47 +613,47 @@ def pagina_analise_por_grupos():
                 st.pyplot(fig)
 
                 st.info(f'Figura 2 - Árvore de Decisão')
-        
+
         def secao3():
             st.subheader('**Seção 3 - Análise de agrupamentos com SHAP**')
-        
+
             st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
-            Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.  
+            Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
-            
+
             botaos3 = st.button('Gerar Análise de agrupamentos com SHAP')
             if botaos3:
                 novo_df = gerar_df_shap()
 
                 def change_color(val):
-                    if isinstance(val, (int, float)):  
+                    if isinstance(val, (int, float)):
                         if(val < 0):
                             color = 'red'
                         elif(val > 0):
                             color = 'blue'
                        # color = 'red' if val < 0 else 'blue'
-                    
+
                         return f'color: {color}'
-                
+
                 styled_df = novo_df.style.applymap(change_color)
 
                 st.dataframe(styled_df)
                 #st.dataframe(novo_df, hide_index=True)
-                
+
 
                 globals.table_list.append('table6')
-                st.info(f'Tabela {len(globals.table_list)} - Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos') 
+                st.info(f'Tabela {len(globals.table_list)} - Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos')
 
 
         def secao4():
             #Criando as variáveis
-           
+
             tabela_df = globals.shapsom_data.copy()
-            tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)                
+            tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
             tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
             nome_variavel_coluna = 'Nome Variável'
             grupos_colunas = sorted(tabela_unica['Grupo'].unique())
-            colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]                
+            colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
             novo_df = pd.DataFrame(columns=colunas_novo_df)
 
             original_df = globals.crunched_df
@@ -629,8 +747,8 @@ def pagina_analise_por_grupos():
                 <header>
                     <h2>4. Diferenças entre agrupamentos</h2>
                 </header>
-                <p class="table-text">A análise comparativa entre os agrupamentos é conduzida combinando todas as informações 
-                        da "Análise de Agrupamentos" (Seção 3), organizando-as em uma disposição paralela. Isso tem o 
+                <p class="table-text">A análise comparativa entre os agrupamentos é conduzida combinando todas as informações
+                        da "Análise de Agrupamentos" (Seção 3), organizando-as em uma disposição paralela. Isso tem o
                         objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.</p>
 
                 <div class="evitar-quebra-pagina">
@@ -647,10 +765,10 @@ def pagina_analise_por_grupos():
 
             html_clusters = ''
             st.subheader('Seção 4 - Diferenças entre grupos')
-            st.markdown('''A análise comparativa entre os agrupamentos é conduzida combinando todas as informações 
-                        da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o 
-                        objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')   
-            botaos4 = st.button('Gerar Diferenças entre grupos') 
+            st.markdown('''A análise comparativa entre os agrupamentos é conduzida combinando todas as informações
+                        da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o
+                        objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')
+            botaos4 = st.button('Gerar Diferenças entre grupos')
             if botaos4:
                 for i in range(max_grupo+1):
                     if i in grupos.groups:
@@ -663,7 +781,7 @@ def pagina_analise_por_grupos():
 
                         st.subheader(f'Grupo {i}')
                         st.text(f'Média de {output_column} do grupo {i}: {media_valor}')
-                    
+
                         def apply_color(val):
                             return f"background-color: {cor_grupo}; "
 
@@ -672,11 +790,11 @@ def pagina_analise_por_grupos():
                             'Nota': None,
                             'Grupo': 'Grupo',
                             'Cor': None
-                            }             
+                            }
                         )
                         html_clusters += f'<h3 style="background-color: {cor_grupo}"> Grupo {i} </h3>'
                         html_clusters += f'<p class="texto-clusters">{output_column} do Grupo {i}: {media_valor}</p>'
-                        html_clusters += f'<p class="texto-clusters">Cidades do cluster: {", ".join(sorted(set(grupo_df["municipios"])))}</p>'                     
+                        html_clusters += f'<p class="texto-clusters">Cidades do cluster: {", ".join(sorted(set(grupo_df["municipios"])))}</p>'
 
                         globals.table_list.append(f'table{i+4}')
                         st.info(f"**Tabela {len(globals.table_list)} - Municípios do Grupo {i}**")
@@ -689,15 +807,15 @@ def pagina_analise_por_grupos():
                         for coluna in grupo_colunas:
                             max_val = df_shap_grupo[coluna].max()
                             min_val = df_shap_grupo[coluna].min()
-                            
+
                             max_row = df_shap_grupo[df_shap_grupo[coluna] == max_val]
                             min_row = df_shap_grupo[df_shap_grupo[coluna] == min_val]
-                            
+
                             filtered_rows.append(max_row)
                             filtered_rows.append(min_row)
 
                         # Concatenando todas as linhas filtradas
-                        filtered_df = pd.concat(filtered_rows).drop_duplicates().reset_index(drop=True)                        
+                        filtered_df = pd.concat(filtered_rows).drop_duplicates().reset_index(drop=True)
                         st.dataframe(filtered_df)
                         globals.table_list.append(f'table2_{i+4}')
                         st.info(f"**Tabela {len(globals.table_list)} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
@@ -707,7 +825,7 @@ def pagina_analise_por_grupos():
                         html_clusters += html_df
 
                         #Mapas
-                        
+
                         def generate_map():
                             # Convert the DataFrame to a GeoDataFrame
                             gdf = gpd.read_file('PE_Municipios_2022.zip')
@@ -716,7 +834,7 @@ def pagina_analise_por_grupos():
                             fig, ax = plt.subplots(1, 1)
 
                             custom_cmap = mcolors.ListedColormap([cor_grupo])
-                            
+
                             values_range = np.linspace(0, 1, 10)
 
                             # Plot the map and apply the custom colormap
@@ -731,10 +849,10 @@ def pagina_analise_por_grupos():
                         with st.spinner('Gerando mapa...'):
                             if os.path.exists(f'mapa{i}.html'):
                                 m_repr_html_ = open(f'mapa{i}.html').read()
-                                components.html(m_repr_html_, height=400)                                
+                                components.html(m_repr_html_, height=400)
                             else:
                                 generate_map()
-                                                        
+
                         globals.img_list.append(f'img{i+3}')
                         st.info(f"**Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}**")
 
@@ -742,8 +860,8 @@ def pagina_analise_por_grupos():
                         caminho_atual = os.getcwd()
                         caminho_final = os.path.join(caminho_atual,f"mapa{i}.png")
                         html_clusters += f'<img src="file:///{caminho_final}" alt="Screenshot">'
-                        html_clusters += f'<p class="legenda-mapa"> Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}</p>'                     
-                
+                        html_clusters += f'<p class="legenda-mapa"> Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}</p>'
+
                 html = html.replace('---===---', html_clusters)
                 path = os.path.join(f"secao3_4.pdf")
                 weasyprint.HTML(string=html).write_pdf(path)
@@ -751,31 +869,42 @@ def pagina_analise_por_grupos():
         def secao5():
             st.subheader('**Seção 5 - Filtro de Triagem**')
             st.markdown('''Esta seção, assim como na seção 2, traz uma análise visual da base de dados, porém agora em uma fatia dos dados
-                        escolida pelo usuário.  
+                        escolida pelo usuário.
                         Essa visualização é útil para analizar de forma mais detalhada elementos de interesse da base de dados.''')
             st.markdown('''Como essa seção funciona:
-                        Ela usa os valores fornecidos pelo usuário nos campos abaixo para filtrar 
-                        a última coluna da base (saída), exibindo as tabelas e mapas de calor para 
-                        o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo 
+                        Ela usa os valores fornecidos pelo usuário nos campos abaixo para filtrar
+                        a última coluna da base (saída), exibindo as tabelas e mapas de calor para
+                        o conjuto de dados cujo o valor da coluna de saída esteja dentro do intervalo
                         de valores fornecido pelo usuário.''')
-            
+
+            last_column_name = globals.crunched_df.columns[-1]
+
             col1, col2 = st.columns(2)
             with col1:
                 val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
             with col2:
                 val_max = st.number_input("Valor máximo", value= 70, placeholder="Digite um número", min_value = 0, max_value=100)
-            
+
             def filtrar_df(df, minimo, maximo):
                     df_filtrado = df[(df.iloc[:, -1] >= (minimo/100)) & (df.iloc[:, -1] <= (maximo/100))]
                     return df_filtrado
-                
+
+            text_secao5 = [
+                ("Esta seção, assim como na seção 2, traz uma análise visual da base de dados, porém ", ""),
+                ("agora em uma fatia dos dados escolida pelo usuário. Essa visualização é útil para",""),
+                ("analizar de forma mais detalhada elementos elementos de interesse da base de dados.",""),
+                ("",""),
+                ("Importante:", "-Bold"),
+                (f'- As imagens abaixo mostram os dados cujo o valor da coluna "{last_column_name}" está', ""),
+                (f"  compreendido entre {val_min}% e {val_max}%", "")]
+
             if val_min > val_max:
                 st.write("**O valor mínimo deve ser menor que o valor máximo**")
             elif (not (0<= val_min<= 100)) or (not (0 <= val_max <= 100)):
                 st.write("**Os valores devem estar entre 0 e 100**")
             else:
                 botao = st.button("Gerar Filtro", type='primary')
-                
+
                 if botao:
                     media_df_filtrado = filtrar_df(globals.crunched_df, val_min, val_max)
                     std_filtrado = globals.crunched_std.iloc[media_df_filtrado.index]
@@ -783,26 +912,27 @@ def pagina_analise_por_grupos():
                     crunched_std = formatDf(std_filtrado)
                     if media_df_filtrado.empty:
                         st.write("**Não há dados nesse intevalo de valores**")
-                    else:     
+                    else:
                         with col1:
                             st.dataframe(media_df_filtrado)
                             globals.table_list.append('table5x1')
                             st.info(f"**Tabela {len(globals.table_list)} - Média**")
-
                             heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                             st.pyplot(heatmap1.figure)
                             globals.graphic_list.append('graph5x1')
                             st.info(f"**Gráfico {len(globals.graphic_list)} - Média**")
-                            
+
                         with col2:
                             st.dataframe(std_filtrado)
                             globals.table_list.append('table5x2')
                             st.info(f"**Tabela {len(globals.table_list)} - MapaDesvio Padrão**")
-
                             heatmap2 = generate_heatmap(crunched_std, 'gray')
                             st.pyplot(heatmap2.figure)
                             globals.graphic_list.append('graph5x2')
                             st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
+
+                        gerar_pdf_secao2e5("secao5.pdf","Seção 5 - Filtro de Triagem", text_secao5, val_min, val_max)
+
 
         st.title('Análise Por Grupos com SHAP/SOM')
         for i,secao in enumerate([secao1, secao2, secao3, secao4, secao5]):
@@ -816,6 +946,5 @@ def pagina_analise_por_grupos():
 
     pagina_anomalias()
 
- 
 
-    
+
