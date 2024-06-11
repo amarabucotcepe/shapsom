@@ -283,9 +283,9 @@ def pagina_analise_por_grupos():
                 st.write('Escolha a base de dados.')
             else:
                 st.markdown('Esta seção trará informações gerais sobre o arquivo de entrada escolhido pelo usuário e os parâmetros utilizados para a criação do mapa SOM.')
-                botaos1 = st.button('Gerar Descrição do arquivo de entrada')
+                
                 gerarEspaco()
-                if botaos1:
+                with st.expander('Visualizar Descrição do arquivo de entrada'):
                     st.write('#### 1.1 Dicionário de Dados')
                     gerarEspaco()
                     textoDicionario = 'Um dicionário de dados é uma tabela que contém informações sobre os dados disponibilizados. As informações reveladas abaixo revelam o número atribuído a cada fator, sua descrição quando disponibilizada e seu tipo de dado.'
@@ -539,8 +539,8 @@ def pagina_analise_por_grupos():
                 ("Nos gráficos referentes aos Mapas de Calor:", ""),
                 ("As linhas representam os municípios, que estão em ordem alfabética;", ""),
                 ("As colunas representam os fatores selecionados pelo usuário na base de dados;", "")]
-            botaos2 = st.button('Gerar Visão Geral de Dados e Mapas de Calor')
-            if botaos2:
+            
+            with st.expander('Visualizar Visão Geral de Dados e Mapas de Calor'):
                 col1, col2 = st.columns(2)
                 with col1:
                     crunched_df = formatDf(globals.crunched_df)
@@ -638,8 +638,7 @@ def pagina_analise_por_grupos():
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
 
-            botaos3 = st.button('Gerar Análise de agrupamentos com SHAP')
-            if botaos3:
+            with st.expander('Visualizar Análise de agrupamentos com SHAP'):
                 novo_df = gerar_df_shap()
 
                 def change_color(val):
@@ -1144,7 +1143,7 @@ def pagina_analise_por_grupos():
                         de valores fornecido pelo usuário.''')
 
             last_column_name = globals.crunched_df.columns[-1]
-
+            
             col1, col2 = st.columns(2)
             with col1:
                 val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
@@ -1191,7 +1190,7 @@ def pagina_analise_por_grupos():
                         with col2:
                             st.dataframe(std_filtrado)
                             globals.table_list.append('table5x2')
-                            st.info(f"**Tabela {len(globals.table_list)} - MapaDesvio Padrão**")
+                            st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
                             heatmap2 = generate_heatmap(crunched_std, 'gray')
                             st.pyplot(heatmap2.figure)
                             globals.graphic_list.append('graph5x2')

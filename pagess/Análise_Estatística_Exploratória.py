@@ -136,10 +136,7 @@ def pagina_analise_estatistica_exploratoria():
                 <header>
                     <h2>4. Análise Estatística Exploratória</h2>
                 </header>
-                <p class="table-text">A análise comparativa entre os agrupamentos é conduzida combinando todas as informações 
-                        da "Análise de Agrupamentos" (Seção 3), organizando-as em uma disposição paralela. Isso tem o 
-                        objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.</p>
-
+                
                 <div class="evitar-quebra-pagina">
                 </div>
 
@@ -162,8 +159,8 @@ def pagina_analise_estatistica_exploratoria():
                     enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
                     intervenções mais intensivas, ajudando a direcionar políticas públicas e recursos de forma mais eficiente.''')
 
-                
-        with st.expander('Visualizar mapa'):
+        botao_mapa = st.button('Gerar mapa')    
+        if botao_mapa:
             def generate_map():
                 # Convert the DataFrame to a GeoDataFrame
                 gdf = gpd.read_file('PE_Municipios_2022.zip')
@@ -173,7 +170,9 @@ def pagina_analise_estatistica_exploratoria():
 
                 df[df.columns[-1]] = df[df.columns[-1]].round(2)
 
-                m = gdf.explore(df.columns[-1], cmap='RdBu', fitbounds="locations")
+                bounds = gdf.total_bounds  # Get the bounds of the data
+                center = [(bounds[1] + bounds[3]) / 2, (bounds[0] + bounds[2]) / 2]
+                m = gdf.explore(df.columns[-1], cmap='RdBu', fit_bounds=True, map_kwds={'location': center, 'zoom_start':4})
 
                 components.html(m._repr_html_(), height=400)
 
