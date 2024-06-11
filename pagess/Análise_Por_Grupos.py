@@ -15,11 +15,12 @@ import json
 import PIL
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import Paragraph
+from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.lib.utils import ImageReader
 from pypdf import PdfMerger
 import math
@@ -52,7 +53,6 @@ from pagess.Anomalias import pagina_anomalias
 from pagess.Relatório_das_Regiões import relatorio_regioes
 from pagess.Relatório_dos_Municípios import relatorio_municipios
 
-
 # Set page configuration
 #st.set_page_config(layout='wide')
 def quebra_pagina():
@@ -83,8 +83,6 @@ def pagina_analise_por_grupos():
                 os.remove(filepath)
 
         def secao1():
-            st_theme = st_javascript("""window.getComputedStyle(window.parent.document.getElementsByClassName("stApp")[0]).getPropertyValue("color-scheme")""")
-
             def verificarColunaDesc(database):
                 nStrings = 0
                 for i in range(database.shape[1]):
@@ -277,7 +275,6 @@ def pagina_analise_por_grupos():
             def gerarEspaco():
                 st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 
-
             st.subheader('Seção 1 - Descrição do arquivo de entrada')
             if( globals.current_database is None):
                 st.write('Escolha a base de dados.')
@@ -315,6 +312,16 @@ def pagina_analise_por_grupos():
                     st.write('#### 1.2 Parâmetros de Treinamento')
                     gerarEspaco()
 
+                    textoSOM = '''Um Mapa Auto-Organizável (SOM) é uma técnica de aprendizado não supervisionado usada para visualizar e organizar dados complexos em uma representação bidimensional. Os principais parâmetros que definem um mapa SOM incluem:
+                    \n●	Topologia hexagonal: Define como as células do mapa influenciam suas vizinhas em um arranjo hexagonal.
+                    \n●	Distância de cluster: Determina como as unidades são agrupadas com base na similaridade dos dados.
+                    \n●	Épocas: Representam o número de vezes que o modelo passa pelos dados durante o treinamento.
+                    \n●	Tamanho do mapa: Define o número total de unidades no mapa.
+                    \n●	Sigma: O raio de influência de cada unidade durante o treinamento.
+                    \n●	Taxa de aprendizado: Controla a magnitude das atualizações dos pesos das unidades durante o treinamento.
+                    '''
+                    st.write(textoSOM)
+
                     st.write('Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:')
                     param_treino = [
                         "Topologia: "+str(globals.topology),
@@ -327,21 +334,113 @@ def pagina_analise_por_grupos():
                     for item in param_treino:
                         st.write(f"- {item}")
 
-                    #if(globals.current_output_columns != []):
-                    #    gerarEspaco()
-                    #    st.write('#### 1.3 Parâmetros de Triagem')
-                    #    gerarEspaco()
-                    #    textoTriagem = 'A etapa de triagem realizará uma análise filtrada em relação à saída "'+globals.current_output_columns[0]+'". Os limites mínimo e máximo determinam o intervalo percentual do filtro realizado.'
-                    #    gerarRetangulo(textoTriagem)
-                    #    gerarEspaco()
-                    #    st.write('Os limites utilizados para a realização da triagem foram:')
-                    #    param_triagem = [
-                    #        f"Limite mínimo: {min_filter*100:.0f}%",
-                    #        f"Limite máximo: {max_filter*100:.0f}%"
-                    #    ]
-                    #    for item in param_triagem:
-                    #        st.write(f"- {item}")
-                    #    gerarEspaco()
+            # PDF
+            def gerarSecao(c,tipo,paragrafo,h):
+                page_w, page_h = letter
+                if(tipo=='p'):
+                    style_paragrafo = ParagraphStyle("paragrafo", fontName="Helvetica", fontSize=12, alignment=4, leading=18, encoding="utf-8")
+                elif(tipo=='t'):
+                    style_paragrafo = ParagraphStyle("titulo", fontName="Helvetica-Bold", fontSize=16, alignment=4, leading=18, encoding="utf-8")
+                elif(tipo=='s'):
+                    style_paragrafo = ParagraphStyle("subtitulo", fontName="Helvetica-Bold", fontSize=14, alignment=4, leading=18, encoding="utf-8")
+                message_paragrafo = Paragraph(paragrafo, style_paragrafo)
+                w_paragrafo, h_paragrafo = message_paragrafo.wrap(page_w -2*inch, page_h)
+                message_paragrafo.drawOn(c, inch, page_h - h- h_paragrafo)
+                return c, h+h_paragrafo+30
+            
+            def gerarTabela(data):
+                if(len(descDados)==0):
+                    data = [['Fator','Nome da coluna','Tipo de dado']]+data
+                else:
+                    data = [['Fator','Nome da coluna','Descrição do dado','Tipo de dado']]+data
+
+                style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 8),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('WORDWRAP', (0, 0), (-1, -1), 'WORD'),
+                ])
+
+                if(len(descDados)==0):
+                    col_widths = [40,330,100]
+                else:
+                    col_widths = [40,165,165,100]
+
+                table = Table(data, colWidths=col_widths)
+                table.setStyle(style)
+                return table
+            
+            def gerarTabelaPdf(c,data,h,start):
+                data2 = []
+                end = 0
+                for i in range(len(data)-start+1):
+                    table = gerarTabela(data2)
+                    w_paragrafo, h_paragrafo = table.wrapOn(c, 0, 0)
+                    if(page_h - h- h_paragrafo< inch):
+                        end = i
+                        break
+
+                    if(i<len(data)-start):
+                        data2+= [data[i+start]]
+                table.drawOn(c, inch, page_h - h- h_paragrafo)
+                return c, h_paragrafo+h, start+end
+
+            def quebraPagina(c, h, tamanho):
+                if(h>tamanho):
+                    c.drawImage('cabecalho.jpeg', inch-8, page_h-50,page_w-inch-52,50)
+                    c.saveState()
+                    c.showPage()
+                    h=65
+                return c, h
+            
+            def gerarSecaoTabela(c,h,dados):
+                start = 0
+                start2 = 0
+                while(True):
+                    c, h, start = gerarTabelaPdf(c,dados,h,start)
+                    if(start==start2):
+                        break
+                    else:
+                        c, h = quebraPagina(c, h, 0)
+                        start2=start
+                return c, h
+
+            page_w, page_h = letter
+            c = canvas.Canvas('secao1.pdf')
+            c, h = gerarSecao(c,'t','Seção 1 - Descrição do arquivo de entrada',65)
+            c, h = gerarSecao(c,'s','1.1 Dicionário de Dados',h)
+            c, h = gerarSecao(c,'p',texto1,h)   
+            c, h = gerarSecao(c,'p',textoDicionario,h-28)
+            c, h = gerarSecaoTabela(c,h,np.array(dicionarioDados))
+            h = h+30
+            c, h = quebraPagina(c, h, 200)
+            c, h = gerarSecao(c,'s','1.2 Parâmetros de Treinamento',h)
+            c, h = gerarSecao(c,'p', textoSOM.split('\n')[0], h)
+            c, h = gerarSecao(c,'p', textoSOM.split('\n')[2], h-20)
+            c, h = gerarSecao(c,'p', textoSOM.split('\n')[4], h-20)
+            c, h = gerarSecao(c,'p', textoSOM.split('\n')[6], h-20)
+            c, h = gerarSecao(c,'p', textoSOM.split('\n')[8], h-20)
+            c, h = gerarSecao(c,'p', textoSOM.split('\n')[10], h-20)
+            c, h = gerarSecao(c,'p', textoSOM.split('\n')[12], h-20)
+            c, h = gerarSecao(c,'p','Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:',h)
+            c, h = gerarSecao(c,'p','• Topologia: '+str(globals.topology),h-28)
+            c, h = gerarSecao(c,'p','• Distância de cluster: '+str(globals.cluster_distance),h-28)
+            c, h = gerarSecao(c,'p','• Épocas: '+str(globals.epochs),h-28)
+            c, h = gerarSecao(c,'p','• Tamanho do mapa: '+str(globals.size),h-28)
+            c, h = gerarSecao(c,'p','• Sigma: '+str(globals.sigma),h-28)
+            c, h = gerarSecao(c,'p','• Taxa de aprendizado: '+str(globals.lr),h-28)
+            h = h+30
+            c.drawImage('cabecalho.jpeg', inch-8, page_h-50,page_w-inch-52,50)
+            c.saveState()
+            c.showPage()
+            c.save()
+
 
         def gerar_df_shap():
             tabela_df = globals.shapsom_data.copy()
