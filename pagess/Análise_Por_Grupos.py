@@ -732,7 +732,23 @@ def pagina_analise_por_grupos():
                 st.info(f"Figura {globals.img_list.index('img2')+1} - {texto_imagem}")
                 #st.info(f"Figura 2 - Árvore de Decisão")
                 
+                #gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
+            
+            pdf_3_2 = st.checkbox("Adicionar a seção de agrupamentos com árvore de decisão no PDF do relatório final?")
+            
+            if pdf_3_2:
                 gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
+            else:
+                caminho = os.getcwd()
+                caminho = os.path.join(caminho,f"secao3_3_2.pdf")
+                try:
+                    if os.path.exists(caminho):
+                        # Apagar o arquivo
+                        os.remove(caminho)
+                except Exception as error:
+                    print(error)
+                    pass
+            
 
         def secao3():
             st.subheader('**Seção 3.1 - Análise de agrupamentos com SHAP**')
@@ -751,6 +767,8 @@ def pagina_analise_por_grupos():
                         elif(val > 0):
                             color = 'blue'
                        # color = 'red' if val < 0 else 'blue'
+                        else:
+                            color = ''
 
                         return f'color: {color}'
 
@@ -763,8 +781,23 @@ def pagina_analise_por_grupos():
                 globals.table_list.append('table6')
                 texto_tabela = f'Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos'
                 st.info(f'Tabela {len(globals.table_list)} - {texto_tabela}')
-                gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
+                #gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
             
+            pdf_3_1 = st.checkbox("Adicionar a seção de agrupamentos com SHAP no PDF do relatório final?")
+            
+            if pdf_3_1:
+                gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
+            else:
+                caminho = os.getcwd()
+                caminho = os.path.join(caminho,f"secao3_3_1.pdf")
+                try:
+                    if os.path.exists(caminho):
+                        # Apagar o arquivo
+                        os.remove(caminho)
+                except Exception as error:
+                    print(error)
+                    pass
+                
             arvore_decisao()
             
         def gerar_pdf_3_1(styled_df: pd.DataFrame, nome_tabela, texto_tabela):
@@ -1310,7 +1343,8 @@ def pagina_analise_por_grupos():
                 secao()
                 st.divider()
                 quebra_pagina()
-            except:
+            except Exception as error:
+                print(error)
                 st.subheader(f'Seção {i+1} - Erro')
 
 
