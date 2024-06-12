@@ -8,6 +8,13 @@ import globals
 import zipfile
 import base64
 import os
+from pypdf import PdfMerger
+from reportlab.lib.utils import ImageReader
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+import io
 
 from my_utils import add_cabecalho
 
@@ -16,9 +23,52 @@ global shape_results
 global shap_columns
 global cluster_dict
 
+def verifica_gerados(diretorio):
+    # Lista de possíveis PDFs
+    secoes = ['secao1.pdf', 'secao2.pdf', 'secao3_3_1.pdf','secao3_3_2.pdf', 'secao4.pdf', 'secao5.pdf', 'secao6.pdf', 'secao7.pdf']
+    # Lista para armazenar os PDFs gerados
+    gerados = []
+
+    # Verificar a existência de cada PDF
+    for secao in secoes:
+        caminho = os.path.join(diretorio, secao)
+        if os.path.isfile(caminho):
+            gerados.append(secao)
+
+    return gerados
+
+def juntar_pdfs(nome_arquivo):
+  caminho = os.getcwd()
+  pdfs = verifica_gerados(caminho)
+
+  merger = PdfMerger()
+
+  for pdf in pdfs:
+      merger.append(pdf)
+
+  nome = nome_arquivo + '.pdf'
+  merger.write(nome)
+  merger.close()
+
+
 def relatorio_municipios():
     st.divider()
-    st.subheader('Seção 8 - Relatório Individual dos Municípios')
+    st.subheader('Relatório de Auditoria final')
+    title = st.text_input("**Informe o nome do relatório a ser gerado**", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
+    nome_arquivo = title + '.pdf'
+    gerar_relatorio = st.button('Clique aqui para gerar seu relatório final!')
+    if gerar_relatorio:
+        juntar_pdfs(title)
+        add_cabecalho(nome_arquivo)
+        with open(nome_arquivo, "rb") as f:
+                pdf_contents = f.read()
+
+            # Baixar o PDF quando o botão é clicado
+        b64 = base64.b64encode(pdf_contents).decode()
+        st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{nome_arquivo}"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório Final</button></a>', unsafe_allow_html=True)
+    
+    st.divider()
+    st.subheader('Relatório Individual dos Municípios')
 
     list_all_labels = [m for m in globals.shape_results.keys()]
 
@@ -219,7 +269,7 @@ def gerar_anexos():
 
             # Baixar o PDF quando o botão é clicado
             b64 = base64.b64encode(pdf_contents).decode()
-            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{municipio}.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Download PDF</button></a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{municipio}.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório</button></a>', unsafe_allow_html=True)
 
             st.markdown(html, unsafe_allow_html=True)
 
@@ -239,7 +289,7 @@ def gerar_anexos():
     b64 = base64.b64encode(zip_contents).decode()
     st.sidebar.divider()
     st.sidebar.title('Anexos', help="Clique no botão abaixo para baixar os relatórios de todos os municípios selecionados")
-    st.sidebar.markdown(f'<a href="data:application/zip;base64,{b64}" download="Anexos.zip"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Download ZIP</button></a>', unsafe_allow_html=True)
+    st.sidebar.markdown(f'<a href="data:application/zip;base64,{b64}" download="Anexos.zip"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatórios Individuais</button></a>', unsafe_allow_html=True)
 
     # Remove os PDFs e o arquivo zip
     for pdf_file in pdf_filenames:

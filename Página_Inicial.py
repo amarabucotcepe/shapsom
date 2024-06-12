@@ -24,7 +24,6 @@ def pagina_inicial():
     
     st.title("**Sistema de Apoio a Auditorias do Tribunal de Contas do Estado 📊**")
     st.subheader("**Aquisição de Dados e Parametrizações.**")
-    title = st.text_input("**Informe o nome do relatório a ser gerado**", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
     tipo = st.radio('**Escolha um tipo de arquivo. Os tipos de arquivo suportados para upload são CSV e Excel.**',['CSV','Excel'], help='CSV (Comma-Separated Values): Este é um formato de arquivo simples que usa uma vírgula para separar os valores. Excel: Este é um formato de planilha criado pela Microsoft. Os arquivos Excel podem conter dados em várias planilhas, além de permitir a inclusão de gráficos, fórmulas e outras funcionalidades avançadas. ')
     st.markdown('Atente-se a como sua planilha está organizada! Tente deixá-la no formato do modelo padrão.')
 
