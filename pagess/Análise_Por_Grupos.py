@@ -674,9 +674,9 @@ def pagina_analise_por_grupos():
                     de sua importância na tabela, maior a importância dessa variável em geral (desconsiderando agrupamentos). Da mesma forma, quanto mais alto ela estiver posicionada na Árvore de Decisão, maior sua importância.
                     Lembrando que essa Árvore de Decisão mostra a importância das variáveis num contexto mais amplo e desconsidera a análise posterior utilizando agrupamentos.
             ''')
-            botao_arvore = st.button('Gerar análise de agrupamento com árvore de decisão')
-
-            if botao_arvore:
+            #botao_arvore = st.button('Gerar análise de agrupamento com árvore de decisão')
+            with st.expander('Gerar análise de agrupamento com árvore de decisão'):
+           # if botao_arvore:
                 df =  globals.current_database
                 # Define the features and the target
                 #X = df[df.columns[3:-1]]
