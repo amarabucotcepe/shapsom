@@ -411,35 +411,37 @@ def pagina_analise_por_grupos():
                         start2=start
                 return c, h
 
-            page_w, page_h = letter
-            c = canvas.Canvas('secao1.pdf')
-            c, h = gerarSecao(c,'t','Seção 1 - Descrição do arquivo de entrada',65)
-            c, h = gerarSecao(c,'s','1.1 Dicionário de Dados',h)
-            c, h = gerarSecao(c,'p',texto1,h)   
-            c, h = gerarSecao(c,'p',textoDicionario,h-28)
-            c, h = gerarSecaoTabela(c,h,np.array(dicionarioDados))
-            h = h+30
-            c, h = quebraPagina(c, h, 200)
-            c, h = gerarSecao(c,'s','1.2 Parâmetros de Treinamento',h)
-            c, h = gerarSecao(c,'p', textoSOM.split('\n')[0], h)
-            c, h = gerarSecao(c,'p', textoSOM.split('\n')[2], h-20)
-            c, h = gerarSecao(c,'p', textoSOM.split('\n')[4], h-20)
-            c, h = gerarSecao(c,'p', textoSOM.split('\n')[6], h-20)
-            c, h = gerarSecao(c,'p', textoSOM.split('\n')[8], h-20)
-            c, h = gerarSecao(c,'p', textoSOM.split('\n')[10], h-20)
-            c, h = gerarSecao(c,'p', textoSOM.split('\n')[12], h-20)
-            c, h = gerarSecao(c,'p','Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:',h)
-            c, h = gerarSecao(c,'p','• Topologia: '+str(globals.topology),h-28)
-            c, h = gerarSecao(c,'p','• Distância de cluster: '+str(globals.cluster_distance),h-28)
-            c, h = gerarSecao(c,'p','• Épocas: '+str(globals.epochs),h-28)
-            c, h = gerarSecao(c,'p','• Tamanho do mapa: '+str(globals.size),h-28)
-            c, h = gerarSecao(c,'p','• Sigma: '+str(globals.sigma),h-28)
-            c, h = gerarSecao(c,'p','• Taxa de aprendizado: '+str(globals.lr),h-28)
-            h = h+30
-            c.drawImage('cabecalho.jpeg', inch-8, page_h-50,page_w-inch-52,50)
-            c.saveState()
-            c.showPage()
-            c.save()
+            pdf1 = st.checkbox('Deseja incluir a seção de Descrição de Arquivo de Entrada no relatório final?')
+            if pdf1:
+                page_w, page_h = letter
+                c = canvas.Canvas('secao1.pdf')
+                c, h = gerarSecao(c,'t','Seção 1 - Descrição do arquivo de entrada',65)
+                c, h = gerarSecao(c,'s','1.1 Dicionário de Dados',h)
+                c, h = gerarSecao(c,'p',texto1,h)   
+                c, h = gerarSecao(c,'p',textoDicionario,h-28)
+                c, h = gerarSecaoTabela(c,h,np.array(dicionarioDados))
+                h = h+30
+                c, h = quebraPagina(c, h, 200)
+                c, h = gerarSecao(c,'s','1.2 Parâmetros de Treinamento',h)
+                c, h = gerarSecao(c,'p', textoSOM.split('\n')[0], h)
+                c, h = gerarSecao(c,'p', textoSOM.split('\n')[2], h-20)
+                c, h = gerarSecao(c,'p', textoSOM.split('\n')[4], h-20)
+                c, h = gerarSecao(c,'p', textoSOM.split('\n')[6], h-20)
+                c, h = gerarSecao(c,'p', textoSOM.split('\n')[8], h-20)
+                c, h = gerarSecao(c,'p', textoSOM.split('\n')[10], h-20)
+                c, h = gerarSecao(c,'p', textoSOM.split('\n')[12], h-20)
+                c, h = gerarSecao(c,'p','Nesta seção, apresentamos os hiperparâmetros utilizados para configurar o algoritmo. Os dados mencionados no parágrafo anterior foram aplicados a um algoritmo de Mapas Auto-Organizáveis (Mapas SOM), utilizando os seguintes parâmetros:',h)
+                c, h = gerarSecao(c,'p','• Topologia: '+str(globals.topology),h-28)
+                c, h = gerarSecao(c,'p','• Distância de cluster: '+str(globals.cluster_distance),h-28)
+                c, h = gerarSecao(c,'p','• Épocas: '+str(globals.epochs),h-28)
+                c, h = gerarSecao(c,'p','• Tamanho do mapa: '+str(globals.size),h-28)
+                c, h = gerarSecao(c,'p','• Sigma: '+str(globals.sigma),h-28)
+                c, h = gerarSecao(c,'p','• Taxa de aprendizado: '+str(globals.lr),h-28)
+                h = h+30
+                c.drawImage('cabecalho.jpeg', inch-8, page_h-50,page_w-inch-52,50)
+                c.saveState()
+                c.showPage()
+                c.save()
 
 
         def gerar_df_shap():
@@ -661,6 +663,8 @@ def pagina_analise_por_grupos():
                     globals.graphic_list.append('graph2')
                     st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')
 
+            pdf2 = st.checkbox('Gerar seção de Visão dos Dados e Gráficos de Mapas de Calor no relatório final?')
+            if pdf2:
                 gerar_pdf_secao2e5("secao2.pdf","Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor", text_secao2)
 
 
@@ -1128,11 +1132,11 @@ def pagina_analise_por_grupos():
                 """
 
             html_clusters = ''
-            st.subheader('Seção 4 - Diferenças entre grupos')
+            st.subheader('Seção 4 - Diferenças entre Agrupamentos')
             st.markdown('''A análise comparativa entre os agrupamentos é conduzida combinando todas as informações
                         da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o
                         objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')
-            botaos4 = st.button('Gerar Diferenças entre grupos')
+            botaos4 = st.button('Gerar Diferenças entre Agrupamentos')
             if botaos4:
                 for i in range(max_grupo+1):
                     if i in grupos.groups:
@@ -1226,8 +1230,10 @@ def pagina_analise_por_grupos():
                         html_clusters += f'<img src="file:///{caminho_final}" alt="Screenshot">'
                         html_clusters += f'<p class="legenda-mapa"> Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}</p>'
 
+            pdf = st.checkbox('Incluir a seção de Diferenças entre Agrupamentos no relatório final? (Atenção, só marque essa opção depois de gerar as Diferenças entre Agrupamentos.)')
+            if pdf:    
                 html = html.replace('---===---', html_clusters)
-                path = os.path.join(f"secao3_4.pdf")
+                path = os.path.join(f"secao4.pdf")
                 weasyprint.HTML(string=html).write_pdf(path)
 
         def secao5():

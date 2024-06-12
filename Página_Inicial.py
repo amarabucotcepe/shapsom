@@ -182,7 +182,7 @@ def pagina_inicial():
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3, tab4= st.tabs(["Aquisição de Dados e Parametrização", "Análise Estatística Exploratória", "Análise Por Grupos", 'Relatórios'])
+tab1, tab2, tab3, tab4= st.tabs(["Aquisição de Dados e Parametrização", "Análise Estatística Exploratória", "Análise de Agrupamentos", 'Relatórios'])
 with tab1:
    pagina_inicial()
 with tab2:
