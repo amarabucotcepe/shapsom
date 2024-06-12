@@ -19,6 +19,8 @@ import kaleido
 import matplotlib.pyplot as plt
 import globals
 import plotly.graph_objects as go
+from my_utils import add_cabecalho
+import base64
 
 import geopandas as gpd
 
@@ -189,6 +191,8 @@ def pagina_analise_estatistica_exploratoria():
 
             st.info(f'Figura 1 - Mapa Colorido Baseado na Variação de Valores da Variável Alvo.')
 
+        check_mapa = st.checkbox('Gostaria de adicionar o Mapa de Análise da Variável Alvo ao relatório?')
+        if check_mapa:
             html_to_png(f'mapa.html', f'mapa.png')
             caminho_atual = os.getcwd()
             caminho_mapa = os.path.join(caminho_atual,f"mapa.png")
@@ -227,14 +231,16 @@ def pagina_analise_estatistica_exploratoria():
             })            
             st.info(f'Tabela 1 - Estatísticas Descritivas da Variável Alvo')
 
+        check_analise = st.checkbox('Gostaria de adicionar a Análise Estatística ao relatório?')
+        if check_analise:
             html_clusters += '<h3> Análise Estatística </h3>'
             html_clusters += '''<p> A tabela de estatísticas fornece um resumo estatístico descritivo da variável alvo para os municípios analisados. Os valores apresentados 
-                    incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
-                    (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios. </p>'''
+                        incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
+                        (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios. </p>'''
             html_df = dfmc_copy.to_html(index=False)
             html_df += f'<p class="legenda-tabela"> Tabela 1 - Estatísticas Descritivas da Variável Alvo </p>'
             html_clusters += html_df
-        
+            
         st.divider()
 
         st.subheader('Gráfico de Dispersão')
@@ -266,11 +272,14 @@ def pagina_analise_estatistica_exploratoria():
             fig.write_image("scatter_plot.png")
             caminho_atual = os.getcwd()
             caminho_grafico = os.path.join(caminho_atual,f"scatter_plot.png")
+
+        check_grafico = st.checkbox('Gostaria de adicionar o gráfico de dispersão ao relatório?')
+        if check_grafico:
             html_clusters += '<h3> Gráfico de Dispersão </h3>'
             html_clusters += '''<p> O gráfico de dispersão faz parte de uma análise estatística mais ampla apresentada no relatório, que visa 
-                        explorar a variabilidade e o desempenho geral dos municípios. Ele permite identificar quais municípios
-                        apresentam desempenhos extremos, tanto positivos quanto negativos, e como os valores da nossa variável alvo estão dispersos
-                        em relação à media. Esta visualização facilita uma identificação mais superficial das áreas que necessitam de maior atenção e recursos. </p>'''
+                            explorar a variabilidade e o desempenho geral dos municípios. Ele permite identificar quais municípios
+                            apresentam desempenhos extremos, tanto positivos quanto negativos, e como os valores da nossa variável alvo estão dispersos
+                            em relação à media. Esta visualização facilita uma identificação mais superficial das áreas que necessitam de maior atenção e recursos. </p>'''
             html_clusters += f'<img src="file:///{caminho_grafico}" alt="Screenshot">'
             html_clusters += f'<p class="legenda-tabela"> Gráfico 1 - Gráfico de Dispersão da Distribuição da Variável Selecionada por Município </p>'
 
@@ -281,3 +290,15 @@ def pagina_analise_estatistica_exploratoria():
         html = html.replace('---===---', html_clusters)
         path = os.path.join(f"Análise Estatística Exploratória.pdf")
         weasyprint.HTML(string=html).write_pdf(path)
+
+        titulo_estatistica = st.text_input("**Informe o nome do relatório de Análise Estatística a ser gerado**", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
+        nome_arquivo = titulo_estatistica + '.pdf'
+        gerar_relatorio_estatistica = st.button('Clique aqui para gerar seu relatório de Análise Estátistica')
+        if gerar_relatorio_estatistica:
+            add_cabecalho('Análise Estatística Exploratória.pdf')
+            with open('Análise Estatística Exploratória.pdf', "rb") as f:
+                    pdf_contents = f.read()
+
+                # Baixar o PDF quando o botão é clicado
+            b64 = base64.b64encode(pdf_contents).decode()
+            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{nome_arquivo}"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório de Análise Estatística</button></a>', unsafe_allow_html=True)

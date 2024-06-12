@@ -53,10 +53,10 @@ def juntar_pdfs(nome_arquivo):
 
 def relatorio_municipios():
     st.divider()
-    st.subheader('Relatório de Auditoria final')
+    st.subheader('Geração do Relatório de Auditoria')
     title = st.text_input("**Informe o nome do relatório a ser gerado**", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
     nome_arquivo = title + '.pdf'
-    gerar_relatorio = st.button('Clique aqui para gerar seu relatório final!')
+    gerar_relatorio = st.button('Clique aqui para gerar seu relatório de Análise de Agrupamentos')
     if gerar_relatorio:
         juntar_pdfs(title)
         add_cabecalho(nome_arquivo)
@@ -65,7 +65,7 @@ def relatorio_municipios():
 
             # Baixar o PDF quando o botão é clicado
         b64 = base64.b64encode(pdf_contents).decode()
-        st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{nome_arquivo}"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório Final</button></a>', unsafe_allow_html=True)
+        st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{nome_arquivo}"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório de Análise de Agrupamentos</button></a>', unsafe_allow_html=True)
     
     st.divider()
     st.subheader('Relatório Individual dos Municípios')
@@ -230,7 +230,7 @@ def gerar_anexos():
             html_pdf = f"""<!DOCTYPE html>
                             <html lang="pt-BR">
                             <head>
-                                <meta charset="UTF-8">
+                                <meta charset="latin1">
                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                                 <style>
                                     @media print {{

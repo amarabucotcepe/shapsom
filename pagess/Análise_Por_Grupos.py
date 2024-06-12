@@ -442,6 +442,17 @@ def pagina_analise_por_grupos():
                 c.saveState()
                 c.showPage()
                 c.save()
+            else:
+                caminho = os.getcwd()
+                caminho = os.path.join(caminho,f"secao1.pdf")
+                try:
+                    if os.path.exists(caminho):
+                        # Apagar o arquivo
+                        os.remove(caminho)
+                except Exception as error:
+                    print(error)
+                    pass
+            
 
 
         def gerar_df_shap():
@@ -666,6 +677,16 @@ def pagina_analise_por_grupos():
             pdf2 = st.checkbox('Gerar seção de Visão dos Dados e Gráficos de Mapas de Calor no relatório final?')
             if pdf2:
                 gerar_pdf_secao2e5("secao2.pdf","Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor", text_secao2)
+            else:
+                caminho = os.getcwd()
+                caminho = os.path.join(caminho,f"secao2.pdf")
+                try:
+                    if os.path.exists(caminho):
+                        # Apagar o arquivo
+                        os.remove(caminho)
+                except Exception as error:
+                    print(error)
+                    pass
 
 
         def arvore_decisao():
@@ -1268,6 +1289,16 @@ def pagina_analise_por_grupos():
                 html = html.replace('---===---', html_clusters)
                 path = os.path.join(f"secao4.pdf")
                 weasyprint.HTML(string=html).write_pdf(path)
+            else:
+                caminho = os.getcwd()
+                caminho = os.path.join(caminho,f"secao4.pdf")
+                try:
+                    if os.path.exists(caminho):
+                        # Apagar o arquivo
+                        os.remove(caminho)
+                except Exception as error:
+                    print(error)
+                    pass
 
         def secao5():
             st.subheader('**Seção 5 - Filtro de Triagem**')
@@ -1334,7 +1365,19 @@ def pagina_analise_por_grupos():
                             globals.graphic_list.append('graph5x2')
                             st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
 
-                        gerar_pdf_secao2e5("secao5.pdf","Seção 5 - Filtro de Triagem", text_secao5, val_min, val_max)
+            pdf_s5 = st.checkbox('Incluir Análise por Filtro de Triagem no relatório?')
+            if pdf_s5:
+                gerar_pdf_secao2e5("secao5.pdf","Seção 5 - Filtro de Triagem", text_secao5, val_min, val_max)
+            else:
+                caminho = os.getcwd()
+                caminho = os.path.join(caminho,f"secao5.pdf")
+                try:
+                    if os.path.exists(caminho):
+                        # Apagar o arquivo
+                        os.remove(caminho)
+                except Exception as error:
+                    print(error)
+                    pass
 
 
         st.title('Análise Por Grupos com SHAP/SOM')
