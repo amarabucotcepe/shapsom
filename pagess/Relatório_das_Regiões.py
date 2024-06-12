@@ -22,7 +22,7 @@ def relatorio_regioes():
 
     with st.expander("Relatório", expanded=False):
         # Ler o PDF
-        with open('secao3_7.pdf', "rb") as f:
+        with open('secao7.pdf', "rb") as f:
             pdf_contents = f.read()
 
         # Baixar o PDF quando o botão é clicado
@@ -30,7 +30,7 @@ def relatorio_regioes():
         st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="Relatório das Regiões.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Download PDF</button></a>', unsafe_allow_html=True)
 
         st.dataframe(df, use_container_width=True)
-    globals.table_list.append('table7x1')
+    # globals.table_list.append('table7x1')
     st.info(f"**Tabela 7 - Municípios e Suas Mesorregiões e Microrregiões**")
 
 
@@ -91,7 +91,7 @@ def secao6():
         f.write(html_pdf)
         
     # Converter o HTML em PDF usando WeasyPrint
-    pdf_filename = 'secao3_7.pdf'
+    pdf_filename = 'secao7.pdf'
     HTML(filename).write_pdf(pdf_filename)
     add_cabecalho(pdf_filename)
 

@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 HEX_SHAPE = "M0,-1 L0.866,-0.5 L0.866,0.5 L0,1 L-0.866,0.5 L-0.866,-0.5 Z"
 
 def add_cabecalho(input_pdf, move_content_down=0):
-    image_path = 'cabecalho.jpeg'
+    image_path = 'pagess/cabecalho.jpeg'
     with open(input_pdf, "rb") as input_file:
         pdf_reader = PdfReader(input_file)
         pdf_writer = PdfWriter()
