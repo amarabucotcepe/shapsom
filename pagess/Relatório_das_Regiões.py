@@ -56,7 +56,7 @@ def secao6():
     html_pdf = f"""<!DOCTYPE html>
                         <html lang="pt-BR">
                         <head>
-                            <meta charset="UTF-8">
+                            <meta charset="latin-1">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <style>
                                 @media print {{
