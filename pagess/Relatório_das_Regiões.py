@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
-from weasyprint import HTML
+import weasyprint
 from PIL import Image
 import base64
 import os
@@ -21,8 +21,8 @@ def relatorio_regioes():
     st.markdown('Essa seção traz uma tabela com todos os municípios de Pernambuco, identificando suas mesorregiões e microrregiões e dando um índice para elas, que é o índice utilizado nos Mapas de Calor.')
 
     with st.expander("Relatório", expanded=False):
-      
         st.dataframe(df, use_container_width=True)
+        
     # globals.table_list.append('table7x1')
     st.info(f"**Tabela 7 - Municípios e Suas Mesorregiões e Microrregiões**")
 
@@ -61,8 +61,8 @@ def secao6():
                             <style>
                                 @media print {{
                                     @page {{
-                                        margin-top: 0.75in;
-                                        size: Letter;
+                                        margin-top: 1.5in;
+                                        size: A4;
                                     }}
                                 }}
                                 .legenda-tabela {{
@@ -73,23 +73,17 @@ def secao6():
                                 }}
                             </style>
                         </head>
-                        <body> <h1 style='font-family: "Helvetica"; text-align: center; font-weight: bold;'>Seção 7 - Identificação de Mesorregiões e Microrregiões</h1>
+                        <body> <h2 style='font-family: "Arial"; font-size: 20px;'>Seção 7 - Identificação de Meso e Microrregiões</h3>
+                            <p style='font-family: "Arial"; font-size: 16px;'> Essa seção traz uma tabela com todos os municípios de Pernambuco, identificando suas mesorregiões e microrregiões e dando um índice para elas, que é o índice utilizado nos Mapas de Calor. </p>
                             {html_table} 
                         </body>
                         </html>"""
     
-    # Salvar o HTML em um arquivo temporário
-    filename = "temp.html"
-    with open(filename, "w") as f:
-        f.write(html_pdf)
-        
     # Converter o HTML em PDF usando WeasyPrint
     pdf_filename = 'secao7.pdf'
-    HTML(filename).write_pdf(pdf_filename)
+    path = os.path.join(pdf_filename)
+    weasyprint.HTML(string=html_pdf).write_pdf(path)
     add_cabecalho(pdf_filename)
-
-    # Remover os arquivos temporários
-    os.remove(filename)
 
 
 
