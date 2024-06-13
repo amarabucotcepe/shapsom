@@ -29,3 +29,4 @@ current_list_labels = []
 table_list = []
 graphic_list = []
 img_list = []
+df_anomalias = None

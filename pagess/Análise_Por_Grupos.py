@@ -49,7 +49,7 @@ import os
 import plotly.graph_objects as go
 
 from pagess.Análise_Estatística_Exploratória import pagina_analise_estatistica_exploratoria
-from pagess.Anomalias import pagina_anomalias
+from pagess.Anomalias import pagina_anomalias, criar_pdf_anomalias
 from pagess.Relatório_das_Regiões import relatorio_regioes
 from pagess.Relatório_dos_Municípios import relatorio_municipios
 
@@ -1385,5 +1385,22 @@ def pagina_analise_por_grupos():
 
         try:
             pagina_anomalias(gerar_df_shap())
+            pdf_6 = st.checkbox("Adicionar a seção de anomalias no PDF do relatório final?")
+            
+            if pdf_6:
+                if (globals.df_anomalias is None):
+                    pass
+                else:
+                    criar_pdf_anomalias(globals.df_anomalias)
+            else:
+                caminho = os.getcwd()
+                caminho = os.path.join(caminho,f"secao6.pdf")
+                try:
+                    if os.path.exists(caminho):
+                        # Apagar o arquivo
+                        os.remove(caminho)
+                except Exception as error:
+                    print(error)
+                    pass
         except:
             print('Continuando...')

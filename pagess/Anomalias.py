@@ -95,5 +95,88 @@ def pagina_anomalias(df_SHAP_grupos_normalizado):
 
                     globals.table_list.append('table6x1')
                     st.info(f"*Tabela {len(globals.table_list)} - Anomalias Encontradas*")
+                    globals.df_anomalias = df_aux
     except:
         st.write("Nenhum dataset foi carregado. Por favor, carregue um dataset e tente novamente.")
+        
+def criar_pdf_anomalias(df_anomalias: pd.DataFrame):
+        html = f"""<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+            @media print {{
+            @page {{
+                margin-top: 1.5in;
+                size: A4;
+            }}
+            }}
+
+            body {{
+                font-family: "Helvetica";
+                font-weight: bold;
+            }}
+
+            header {{
+                text-align: left
+                margin-top: 0px; /* Espaço superior */
+            }}
+
+            .table-text {{
+                text-align: justify; /* Alinha o texto com justificação */
+                margin-bottom: 10px; /* Margem para alinhamento com as extremidades da página */
+                font-size: 12px;
+            }}
+            
+            .legenda-tabela {{
+                font-size: 10px;
+                font-style: italic;
+                color:blue;
+            }}
+
+            /* Define o tamanho da tabela */
+            table {{
+                width: 50vw; /* 50% da largura da viewport */
+                height: calc(297mm / 2); /* Metade da altura de uma folha A4 */
+                border: 1px solid black; /* Borda da tabela */
+                border-collapse: collapse; /* Colapso das bordas da tabela */
+            }}
+            /* Estilo das células */
+            td, th {{
+                border: 1px solid black; /* Borda das células */
+                padding: 4px; /* Espaçamento interno das células */
+                text-align: center; /* Alinhamento do texto */
+                font-size: 12px; /* Tamanho da fonte */
+            }}
+
+            .evitar-quebra-pagina {{
+                page-break-inside: avoid; /* Evita quebra de página dentro do bloco */
+            }}
+
+            </style>
+            </head>
+
+            <body>
+            <header>
+                <h2>Anomalias</h2>
+            </header>
+            <p class="table-text">A análise de anomalias foi conduzida utilizando um Mapa Auto-Organizável (SOM) para identificar pontos de dados que se desviam significativamente do padrão observado.
+    Com as coordenadas dos pontos no SOM, o centroide do mapa foi calculado. Este centroide é determinado utilizando a mediana das coordenadas x e y de todos os pontos, o que fornece uma medida menos sensível a outliers em comparação com a média. Então, são calculadas as distâncias dos pontos para o centroide do mapa.
+    Pontos que apresentaram distâncias significativamente maiores em relação ao centroide foram identificados como anômalos. Estes pontos fora do cluster principal sugerem comportamentos ou características discrepantes dos dados normais, destacando-se por estarem afastados do padrão usual.</p>
+            
+            
+            *-*-*-*-*
+            <p class="legenda-tabela">tabela_secao_6</p>
+            
+            </body>
+            </html>
+            """
+            
+        df_anomalias_editado = df_anomalias.copy()
+        df_anomalias_editado = df_anomalias_editado.drop(['Nota', 'x', 'y'],axis=1)
+            
+        html = html.replace('*-*-*-*-*', df_anomalias_editado.to_html())
+        html = html.replace('tabela_secao_6', "Tabela 6.1 - Tabela de anomalias")
+        path = os.path.join(f"secao6.pdf")
+        weasyprint.HTML(string=html).write_pdf(path)
