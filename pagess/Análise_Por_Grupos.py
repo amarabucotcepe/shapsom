@@ -344,6 +344,14 @@ def pagina_analise_por_grupos():
                 message_paragrafo.drawOn(c, inch, page_h - h- h_paragrafo)
                 return c, h+h_paragrafo+30
             
+            def gerarLegenda(c,paragrafo,h):
+                page_w, page_h = letter
+                style_paragrafo = ParagraphStyle("paragrafo", fontName="Helvetica-Oblique", fontSize=10, alignment=4, leading=18, encoding="utf-8", textColor = 'blue')
+                message_paragrafo = Paragraph(paragrafo, style_paragrafo)
+                w_paragrafo, h_paragrafo = message_paragrafo.wrap(page_w -2*inch, page_h)
+                message_paragrafo.drawOn(c, inch, page_h - h- h_paragrafo)
+                return c, h+h_paragrafo+20
+            
             def gerarTabela(data):
                 if(len(descDados)==0):
                     data = [['Fator','Nome da coluna','Tipo de dado']]+data
@@ -373,19 +381,22 @@ def pagina_analise_por_grupos():
                 return table
             
             def gerarTabelaPdf(c,data,h,start):
-                data2 = []
-                end = 0
-                for i in range(len(data)-start+1):
-                    table = gerarTabela(data2)
-                    w_paragrafo, h_paragrafo = table.wrapOn(c, 0, 0)
-                    if(page_h - h- h_paragrafo< inch):
-                        end = i
-                        break
+                if(len(data)>start):
+                    data2 = []
+                    end = 0
+                    for i in range(len(data)-start+1):
+                        table = gerarTabela(data2)
+                        w_paragrafo, h_paragrafo = table.wrapOn(c, 0, 0)
+                        if(page_h - h- h_paragrafo< inch):
+                            end = i
+                            break
 
-                    if(i<len(data)-start):
-                        data2+= [data[i+start]]
-                table.drawOn(c, inch, page_h - h- h_paragrafo)
-                return c, h_paragrafo+h, start+end
+                        if(i<len(data)-start):
+                            data2+= [data[i+start]]
+                    table.drawOn(c, inch, page_h - h- h_paragrafo)
+                    return c, h_paragrafo+h, start+end
+                else:
+                    return c, h, start
 
             def quebraPagina(c, h, tamanho):
                 if(h>tamanho):
@@ -416,7 +427,7 @@ def pagina_analise_por_grupos():
                 c, h = gerarSecao(c,'p',texto1,h)   
                 c, h = gerarSecao(c,'p',textoDicionario,h-28)
                 c, h = gerarSecaoTabela(c,h,np.array(dicionarioDados))
-                h = h+30
+                c, h = gerarLegenda(c,'Tabela 1.1 - Dicionário de Dados', h+5)
                 c, h = quebraPagina(c, h, 200)
                 c, h = gerarSecao(c,'s','1.2 Parâmetros de Treinamento',h)
                 c, h = gerarSecao(c,'p', textoSOM.split('\n')[0], h)
