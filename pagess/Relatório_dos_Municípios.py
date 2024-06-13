@@ -1,7 +1,7 @@
 import streamlit as st
 import warnings
 warnings.filterwarnings("ignore")
-from weasyprint import HTML
+import weasyprint
 from tqdm import tqdm
 from PIL import Image
 import globals
@@ -142,7 +142,7 @@ def gerar_anexos():
             table1 +=  '</td>'
             table1 +=  '</tr>'
             table1 +=  '</table>'
-            table1 += f"<p class='legenda-tabela'> Tabela 8.{4*i + 1} - Impacto dos Fatores na Taxa de {dados['feature']} </p>"
+            table1 += f"<p class='legenda-tabela'> Tabela 1 - Impacto dos Fatores na Taxa de {dados['feature']} </p>"
 
             table2 = '<table style="margin-left: auto; margin-right: auto; margin-top: 60px; width: 627px; border: 2px solid grey;">'
             table2 += '<caption style="color: #8B4513; caption-side: top; border: 2px solid grey; text-align: center; font-weight: bold; font-size: 23px; padding: 10px 0;"> Fatores que Mais Influenciaram </caption>'
@@ -177,7 +177,7 @@ def gerar_anexos():
                 table2 += f'<td style="color: red; width:10%; border: 1px solid grey;">' + (f'{valor_menor:.3f}' if valor_menor is not None else "---") + '</td>'
                 table2 += '</tr>'
             table2 += '</table>'
-            table2 += f'<p class="legenda-tabela"> Tabela 8.{4*i + 2} - Principais Fatores de Influência </p>'
+            table2 += f'<p class="legenda-tabela"> Tabela 2 - Principais Fatores de Influência </p>'
 
             score_municipio = dados['scores'][dados['labels'].index(municipio)]
             table3 =   '<table style="margin-left: auto; margin-right: auto; margin-top: 60px; width: 627px; border: 2px solid grey;">'
@@ -201,7 +201,7 @@ def gerar_anexos():
             table3 +=  '</td>'
             table3 +=  '</tr>'
             table3 += '</table>'
-            table3 += f"<p class='legenda-tabela'> Tabela 8.{4*i + 3} - Comparação da {dados['feature']} entre o Município e o seu Grupo </p>"
+            table3 += f"<p class='legenda-tabela'> Tabela 3 - Comparação da {dados['feature']} entre o Município e o seu Grupo </p>"
 
             cell_labels = [label for label in dados['labels'] if label != municipio]
             cell_labels.sort()
@@ -226,7 +226,7 @@ def gerar_anexos():
             table4 +=   ' <td colspan="2" style="font-size:15px; text-align: center;"> OBS: A <i>PROXIMIDADE</i> ENVOLVE O <span style="color:#00FFFF;">CONJUNTO TOTAL</span> DOS FATORES E SUAS SEMELHANÇAS, AO INVÉS DE QUESTÕES GEOGRÁFICAS. </td>'
             table4 +=   '</tr>'
             table4 +=   '</table>'
-            table4 += f'<p class="legenda-tabela"> Tabela 8.{4*i + 4} - Municípios Mais Semelhantes a {municipio} </p>'
+            table4 += f'<p class="legenda-tabela"> Tabela 4 - Municípios Mais Semelhantes a {municipio} </p>'
 
             html = f"""{table1}
                        {table2}
@@ -241,8 +241,8 @@ def gerar_anexos():
                                 <style>
                                     @media print {{
                                         @page {{
-                                            margin-top: 0.75in;
-                                            size: Letter;
+                                            margin-top: 1.5in;
+                                            size: A4;
                                         }}
                                     }}
                                     .legenda-tabela {{
@@ -256,15 +256,9 @@ def gerar_anexos():
                             <body> {html} </body>
                             </html>"""
 
-
-            # Salvar o HTML em um arquivo temporário
-            filename = os.path.join(save_path, "temp.html")
-            with open(filename, "w") as f:
-                f.write(html_pdf)
-
             # Converter o HTML em PDF usando WeasyPrint
             pdf_filename = os.path.join(save_path, f'{municipio}.pdf')
-            HTML(filename).write_pdf(pdf_filename)
+            weasyprint.HTML(string=html_pdf).write_pdf(pdf_filename)
             add_cabecalho(pdf_filename)
 
             pdf_filenames.append(pdf_filename)
@@ -281,9 +275,6 @@ def gerar_anexos():
 
             st.markdown(html, unsafe_allow_html=True)
 
-            # Remover os arquivos temporários
-            os.remove(filename)
-
     # Criar um arquivo zip
     zip_filename = os.path.join(save_path, 'Anexos.zip')
     with zipfile.ZipFile(zip_filename, "w") as zipf:
@@ -297,7 +288,7 @@ def gerar_anexos():
     b64 = base64.b64encode(zip_contents).decode()
     st.sidebar.divider()
     st.sidebar.title('Anexos', help="Clique no botão abaixo para baixar os relatórios de todos os municípios selecionados")
-    st.sidebar.markdown(f'<a href="data:application/zip;base64,{b64}" download="Relatório_Municípios_Selecionados.zip"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatórios Individuais</button></a>', unsafe_allow_html=True)
+    st.sidebar.markdown(f'<a href="data:application/zip;base64,{b64}" download="Anexos.zip"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatórios Individuais</button></a>', unsafe_allow_html=True)
 
     # Remove os PDFs e o arquivo zip
     for pdf_file in pdf_filenames:
