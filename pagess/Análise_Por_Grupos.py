@@ -77,10 +77,7 @@ def pagina_analise_por_grupos():
 
     if has_databases:
         df =  globals.current_database
-        for i in range(globals.som_data['Grupo'].max() + 1):
-            filepath = f'mapa{i}.html'
-            if os.path.exists(filepath):
-                os.remove(filepath)
+
 
         def secao1():
             def verificarColunaDesc(database):
@@ -411,7 +408,7 @@ def pagina_analise_por_grupos():
                         start2=start
                 return c, h
 
-            pdf1 = st.checkbox('Deseja incluir a seção de Descrição de Arquivo de Entrada no relatório final?')
+            pdf1 = st.checkbox('Deseja incluir a seção de Descrição de Arquivo de Entrada no relatório?')
             if pdf1:
                 page_w, page_h = letter
                 c = canvas.Canvas('secao1.pdf')
@@ -674,7 +671,7 @@ def pagina_analise_por_grupos():
                     globals.graphic_list.append('graph2')
                     st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')
 
-            pdf2 = st.checkbox('Gerar seção de Visão dos Dados e Gráficos de Mapas de Calor no relatório final?')
+            pdf2 = st.checkbox('Deseja incluir a seção de Visão dos Dados e Gráficos de Mapas de Calor no relatório?')
             if pdf2:
                 gerar_pdf_secao2e5("secao2.pdf","Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor", text_secao2)
             else:
@@ -755,7 +752,7 @@ def pagina_analise_por_grupos():
                 
                 #gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
             
-            pdf_3_2 = st.checkbox("Adicionar a seção de agrupamentos com árvore de decisão no PDF do relatório final?")
+            pdf_3_2 = st.checkbox("Deseja incluir a seção de agrupamentos com árvore de decisão no PDF do relatório?")
             
             if pdf_3_2:
                 gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
@@ -804,7 +801,7 @@ def pagina_analise_por_grupos():
                 st.info(f'Tabela {len(globals.table_list)} - {texto_tabela}')
                 #gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
             
-            pdf_3_1 = st.checkbox("Adicionar a seção de agrupamentos com SHAP no PDF do relatório final?")
+            pdf_3_1 = st.checkbox("Deseja incluir a seção de agrupamentos com SHAP no PDF do relatório?")
             
             if pdf_3_1:
                 gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
@@ -1066,31 +1063,7 @@ def pagina_analise_por_grupos():
             path = os.path.join(f"secao3_3_2.pdf")
             weasyprint.HTML(string=html).write_pdf(path)
             
-            
-        def secao4():
-            #Criando as variáveis
-
-            tabela_df = globals.shapsom_data.copy()
-            tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
-            tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
-            nome_variavel_coluna = 'Nome Variável'
-            grupos_colunas = sorted(tabela_unica['Grupo'].unique())
-            colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
-            novo_df = pd.DataFrame(columns=colunas_novo_df)
-
-            original_df = globals.crunched_df
-            df = globals.shapsom_data
-            max_grupo = df['Grupo'].max()
-            df_expandido = df.assign(municipios=df['Municípios'].str.split(',')).explode('municipios').reset_index(drop=True)
-            df_expandido = df_expandido.drop(columns=['Municípios', 'x', 'y'])
-
-            output_column = original_df.columns[-1]
-            output_values = original_df.iloc[:, -1]
-            df_expandido[output_column] = output_values.values
-            novo_df = gerar_df_shap()
-
-            grupos = df_expandido.groupby('Grupo')
-
+        def gerar_pdf_4(html_clusters):
             html = f"""<!DOCTYPE html>
             <html lang="en">
                 <head>
@@ -1184,14 +1157,41 @@ def pagina_analise_por_grupos():
 
                 </html>
                 """
+            
+            html = html.replace('---===---', html_clusters)
+            path = os.path.join(f"secao4.pdf")
+            weasyprint.HTML(string=html).write_pdf(path)
+
+        def secao4():
+            #Criando as variáveis
+
+            tabela_df = globals.shapsom_data.copy()
+            tabela_df.drop(['Municípios', 'Nota', 'SHAP Normalizado', 'x', 'y', 'Cor', 'SHAP Original'], axis=1, inplace=True)
+            tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
+            nome_variavel_coluna = 'Nome Variável'
+            grupos_colunas = sorted(tabela_unica['Grupo'].unique())
+            colunas_novo_df = [nome_variavel_coluna] + [f'Grupo {grupo}' for grupo in grupos_colunas]
+            novo_df = pd.DataFrame(columns=colunas_novo_df)
+
+            original_df = globals.crunched_df
+            df = globals.shapsom_data
+            max_grupo = df['Grupo'].max()
+            df_expandido = df.assign(municipios=df['Municípios'].str.split(',')).explode('municipios').reset_index(drop=True)
+            df_expandido = df_expandido.drop(columns=['Municípios', 'x', 'y'])
+
+            output_column = original_df.columns[-1]
+            output_values = original_df.iloc[:, -1]
+            df_expandido[output_column] = output_values.values
+            novo_df = gerar_df_shap()
+
+            grupos = df_expandido.groupby('Grupo')
 
             html_clusters = ''
             st.subheader('Seção 4 - Diferenças entre Agrupamentos')
             st.markdown('''A análise comparativa entre os agrupamentos é conduzida combinando todas as informações
                         da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o
                         objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')
-            botaos4 = st.button('Gerar Diferenças entre Agrupamentos')
-            if botaos4:
+            with st.expander('Visualizar Diferenças entre Agrupamentos'):
                 for i in range(max_grupo+1):
                     if i in grupos.groups:
                         #Tabelas
@@ -1218,8 +1218,8 @@ def pagina_analise_por_grupos():
                         html_clusters += f'<p class="texto-clusters">{output_column} do Grupo {i}: {media_valor}</p>'
                         html_clusters += f'<p class="texto-clusters">Cidades do cluster: {", ".join(sorted(set(grupo_df["municipios"])))}</p>'
 
-                        globals.table_list.append(f'table{i+4}')
-                        st.info(f"**Tabela {len(globals.table_list)} - Municípios do Grupo {i}**")
+                        
+                        st.info(f"**Tabela 4.{i} - Municípios do Grupo {i}**")
 
                         df_shap_grupo = novo_df.iloc[:, [0, i]]
                         grupo_colunas = [col for col in df_shap_grupo.columns if col.startswith('Grupo')]
@@ -1239,11 +1239,10 @@ def pagina_analise_por_grupos():
                         # Concatenando todas as linhas filtradas
                         filtered_df = pd.concat(filtered_rows).drop_duplicates().reset_index(drop=True)
                         st.dataframe(filtered_df)
-                        globals.table_list.append(f'table2_{i+4}')
-                        st.info(f"**Tabela {len(globals.table_list)} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
+                        st.info(f"**Tabela 4.{i+4} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
 
                         html_df = filtered_df.to_html(index=False)
-                        html_df += f'<p class="legenda-tabela"> Tabela {len(globals.table_list) - i} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}</p>'
+                        html_df += f'<p class="legenda-tabela"> Tabela {i+4} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}</p>'
                         html_clusters += html_df
 
                         #Mapas
@@ -1275,20 +1274,17 @@ def pagina_analise_por_grupos():
                             else:
                                 generate_map()
 
-                        globals.img_list.append(f'img{i+3}')
-                        st.info(f"**Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}**")
+                        st.info(f"**Figura 4.{i} - Mapa de Municípios do Grupo {i}**")
 
                         html_to_png(f'mapa{i}.html', f'mapa{i}.png')
                         caminho_atual = os.getcwd()
                         caminho_final = os.path.join(caminho_atual,f"mapa{i}.png")
                         html_clusters += f'<img src="file:///{caminho_final}" alt="Screenshot">'
-                        html_clusters += f'<p class="legenda-mapa"> Figura {len(globals.img_list)} - Mapa de Municípios do Grupo {i}</p>'
+                        html_clusters += f'<p class="legenda-mapa"> Figura 4.{i} - Mapa de Municípios do Grupo {i}</p>'
 
-            pdf = st.checkbox('Incluir a seção de Diferenças entre Agrupamentos no relatório final? (Atenção, só marque essa opção depois de gerar as Diferenças entre Agrupamentos.)')
-            if pdf:    
-                html = html.replace('---===---', html_clusters)
-                path = os.path.join(f"secao4.pdf")
-                weasyprint.HTML(string=html).write_pdf(path)
+            pdf = st.checkbox('Deseja incluir a seção de Diferenças entre Agrupamentos no relatório? (Atenção, marque essa opção antes de gerar as Diferenças entre Agrupamentos.)', value=1)
+            if pdf:
+                gerar_pdf_4(html_clusters)
             else:
                 caminho = os.getcwd()
                 caminho = os.path.join(caminho,f"secao4.pdf")
@@ -1349,23 +1345,19 @@ def pagina_analise_por_grupos():
                     else:
                         with col1:
                             st.dataframe(media_df_filtrado)
-                            globals.table_list.append('table5x1')
-                            st.info(f"**Tabela {len(globals.table_list)} - Média**")
+                            st.info(f"**Tabela 5.1 - Média**")
                             heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                             st.pyplot(heatmap1.figure)
-                            globals.graphic_list.append('graph5x1')
-                            st.info(f"**Gráfico {len(globals.graphic_list)} - Média**")
+                            st.info(f"**Gráfico 5.1 - Média**")
 
                         with col2:
                             st.dataframe(std_filtrado)
-                            globals.table_list.append('table5x2')
-                            st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                            st.info(f"**Tabela 5.2 - Desvio Padrão**")
                             heatmap2 = generate_heatmap(crunched_std, 'gray')
                             st.pyplot(heatmap2.figure)
-                            globals.graphic_list.append('graph5x2')
-                            st.info(f"**Gráfico {len(globals.graphic_list)} - Desvio Padrão**")
+                            st.info(f"**Gráfico 5.2 - Desvio Padrão**")
 
-            pdf_s5 = st.checkbox('Incluir Análise por Filtro de Triagem no relatório?')
+            pdf_s5 = st.checkbox('Deseja incluir a seção de Análise por Filtro de Triagem no relatório?')
             if pdf_s5:
                 gerar_pdf_secao2e5("secao5.pdf","Seção 5 - Filtro de Triagem", text_secao5, val_min, val_max)
             else:
@@ -1391,4 +1383,4 @@ def pagina_analise_por_grupos():
                 st.subheader(f'Seção {i+1} - Erro')
 
 
-    pagina_anomalias()
+    pagina_anomalias(gerar_df_shap())

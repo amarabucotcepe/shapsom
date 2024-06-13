@@ -15,8 +15,11 @@ from reportlab.lib.pagesizes import letter
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 import io
+import locale
+from datetime import datetime
 
 from my_utils import add_cabecalho
+from capa import criar_capa
 
 global current_list_labels
 global shape_results
@@ -25,7 +28,8 @@ global cluster_dict
 
 def verifica_gerados(diretorio):
     # Lista de possíveis PDFs
-    secoes = ['secao1.pdf', 'secao2.pdf', 'secao3_3_1.pdf','secao3_3_2.pdf', 'secao4.pdf', 'secao5.pdf', 'secao6.pdf', 'secao7.pdf']
+    criar_capa('Análise por Agrupamentos')
+    secoes = ['capa.pdf','secao1.pdf', 'secao2.pdf', 'secao3_3_1.pdf','secao3_3_2.pdf','secao4.pdf', 'secao5.pdf', 'secao6.pdf', 'secao7.pdf']
     # Lista para armazenar os PDFs gerados
     gerados = []
 
@@ -65,7 +69,9 @@ def relatorio_municipios():
 
             # Baixar o PDF quando o botão é clicado
         b64 = base64.b64encode(pdf_contents).decode()
-        st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{nome_arquivo}"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório de Análise de Agrupamentos</button></a>', unsafe_allow_html=True)
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        data_atual = datetime.now()
+        st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="Relatório_Agrupamentos_{title}_{data_atual}.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório de Análise de Agrupamentos</button></a>', unsafe_allow_html=True)
     
     st.divider()
     st.subheader('Relatório Individual dos Municípios')
@@ -269,7 +275,9 @@ def gerar_anexos():
 
             # Baixar o PDF quando o botão é clicado
             b64 = base64.b64encode(pdf_contents).decode()
-            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{municipio}.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório</button></a>', unsafe_allow_html=True)
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            data_atual = datetime.now()
+            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="Relatório_Agrupamentos_{data_atual}_{municipio}.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório</button></a>', unsafe_allow_html=True)
 
             st.markdown(html, unsafe_allow_html=True)
 
@@ -289,7 +297,7 @@ def gerar_anexos():
     b64 = base64.b64encode(zip_contents).decode()
     st.sidebar.divider()
     st.sidebar.title('Anexos', help="Clique no botão abaixo para baixar os relatórios de todos os municípios selecionados")
-    st.sidebar.markdown(f'<a href="data:application/zip;base64,{b64}" download="Anexos.zip"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatórios Individuais</button></a>', unsafe_allow_html=True)
+    st.sidebar.markdown(f'<a href="data:application/zip;base64,{b64}" download="Relatório_Municípios_Selecionados.zip"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatórios Individuais</button></a>', unsafe_allow_html=True)
 
     # Remove os PDFs e o arquivo zip
     for pdf_file in pdf_filenames:

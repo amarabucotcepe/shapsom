@@ -21,10 +21,22 @@ import globals
 import plotly.graph_objects as go
 from my_utils import add_cabecalho
 import base64
-
+from pypdf import PdfMerger
+from capa import criar_capa
+import locale
+from datetime import datetime
 import geopandas as gpd
 
 import os
+
+def juntar_pdfs(pdfs):
+  merger = PdfMerger()
+  for pdf in pdfs:
+      merger.append(pdf)
+
+  nome = 'Análise Estatística Exploratória.pdf'
+  merger.write(nome)
+  merger.close()
 
 def html_to_png(html_file, output_png):
             # Configuração do WebDriver (neste caso, estou usando o Chrome)
@@ -136,7 +148,7 @@ def pagina_analise_estatistica_exploratoria():
 
                 <body>
                 <header>
-                    <h2>4. Análise Estatística Exploratória</h2>
+                    <h1>Análise Estatística Exploratória</h1>
                 </header>
                 
                 <div class="evitar-quebra-pagina">
@@ -196,7 +208,7 @@ def pagina_analise_estatistica_exploratoria():
             html_to_png(f'mapa.html', f'mapa.png')
             caminho_atual = os.getcwd()
             caminho_mapa = os.path.join(caminho_atual,f"mapa.png")
-            html_clusters += '<h3> Mapa de Análise de Variável </h3>'
+            html_clusters += '<h2> Mapa de Análise de Variável </h2>'
             html_clusters += '''<p> O mapa de análise da variável alvo apresenta uma análise geoespacial dos municípios do estado de Pernambuco. As diferentes tonalidades de cores no 
                                     mapa representam as variações nos níveis da variável de escolha. As áreas em tons mais escuros indicam um desempenho superior, 
                                     enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
@@ -233,7 +245,7 @@ def pagina_analise_estatistica_exploratoria():
 
         check_analise = st.checkbox('Gostaria de adicionar a Análise Estatística ao relatório?')
         if check_analise:
-            html_clusters += '<h3> Análise Estatística </h3>'
+            html_clusters += '<h2> Análise Estatística </h2>'
             html_clusters += '''<p> A tabela de estatísticas fornece um resumo estatístico descritivo da variável alvo para os municípios analisados. Os valores apresentados 
                         incluem a contagem de observações, média, desvio padrão, valores mínimos e máximos, bem como os percentis 25%, 50% 
                         (mediana) e 75%. Estas estatísticas são úteis para entender a distribuição e a variabilidade entre os municípios. </p>'''
@@ -275,7 +287,7 @@ def pagina_analise_estatistica_exploratoria():
 
         check_grafico = st.checkbox('Gostaria de adicionar o gráfico de dispersão ao relatório?')
         if check_grafico:
-            html_clusters += '<h3> Gráfico de Dispersão </h3>'
+            html_clusters += '<h2> Gráfico de Dispersão </h2>'
             html_clusters += '''<p> O gráfico de dispersão faz parte de uma análise estatística mais ampla apresentada no relatório, que visa 
                             explorar a variabilidade e o desempenho geral dos municípios. Ele permite identificar quais municípios
                             apresentam desempenhos extremos, tanto positivos quanto negativos, e como os valores da nossa variável alvo estão dispersos
@@ -283,22 +295,28 @@ def pagina_analise_estatistica_exploratoria():
             html_clusters += f'<img src="file:///{caminho_grafico}" alt="Screenshot">'
             html_clusters += f'<p class="legenda-tabela"> Gráfico 1 - Gráfico de Dispersão da Distribuição da Variável Selecionada por Município </p>'
 
-        st.divider()    
-
-        st.markdown('Você chegou ao fim da página de Análises Estatística Exploratória! Para prosseguir com a aplicação, volte para o topo da página e clique em "Análise Por Grupos" para prosseguir até a próxima página.')
-
         html = html.replace('---===---', html_clusters)
         path = os.path.join(f"Análise Estatística Exploratória.pdf")
         weasyprint.HTML(string=html).write_pdf(path)
 
+        st.divider()
+        st.subheader('Geração de Relatório de Análise Estatística Exploratória')
         titulo_estatistica = st.text_input("**Informe o nome do relatório de Análise Estatística a ser gerado**", help='Esse nome será utilizado no título do arquivo de PDF que será gerado ao fim da aplicação.')
-        nome_arquivo = titulo_estatistica + '.pdf'
         gerar_relatorio_estatistica = st.button('Clique aqui para gerar seu relatório de Análise Estátistica')
         if gerar_relatorio_estatistica:
+            criar_capa('Análise Estatística')
+            arquivos = ['capa.pdf', 'Análise Estatística Exploratória.pdf']
+            juntar_pdfs(arquivos)
             add_cabecalho('Análise Estatística Exploratória.pdf')
             with open('Análise Estatística Exploratória.pdf', "rb") as f:
                     pdf_contents = f.read()
 
                 # Baixar o PDF quando o botão é clicado
             b64 = base64.b64encode(pdf_contents).decode()
-            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="{nome_arquivo}"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório de Análise Estatística</button></a>', unsafe_allow_html=True)
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            data_atual = datetime.now()
+            st.markdown(f'<a href="data:application/octet-stream;base64,{b64}" download="Relatório_Estatística_{titulo_estatistica}_{data_atual}.pdf"><button style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório de Análise Estatística</button></a>', unsafe_allow_html=True)
+
+        
+        st.divider()
+        st.markdown('Você chegou ao fim da página de Análises Estatística Exploratória! Para prosseguir com a aplicação, volte para o topo da página e clique em "Análise Por Grupos" para prosseguir até a próxima página.')
