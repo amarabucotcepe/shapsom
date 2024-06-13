@@ -173,7 +173,7 @@ def pagina_analise_estatistica_exploratoria():
                     enquanto as áreas em tons mais claros refletem um desempenho inferior. Esta visualização detalhada é crucial para identificar regiões que necessitam de 
                     intervenções mais intensivas, ajudando a direcionar políticas públicas e recursos de forma mais eficiente.''')
  
-        with st.expander('Visualizar mapa de Análise da Variável Alvo'):
+        with st.expander('Visualizar mapa de Análise da Variável Alvo', expanded=True):
             def generate_map():
                 # Convert the DataFrame to a GeoDataFrame
                 gdf = gpd.read_file('PE_Municipios_2022.zip')

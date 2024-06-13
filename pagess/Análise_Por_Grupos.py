@@ -302,9 +302,8 @@ def pagina_analise_por_grupos():
                         st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 
                     gerarEspaco()
-
-                    globals.table_list.append('table3')
-                    st.info(f'Tabela {len(globals.table_list)} - Dicionário de Dados')
+                    
+                    st.info(f'Tabela 1.1 - Dicionário de Dados')
 
                     st.write('#### 1.2 Parâmetros de Treinamento')
                     gerarEspaco()
@@ -654,22 +653,18 @@ def pagina_analise_por_grupos():
                 with col1:
                     crunched_df = formatDf(globals.crunched_df)
                     st.dataframe(globals.crunched_df)
-                    globals.table_list.append('table4')
-                    st.info(f"**Tabela {len(globals.table_list)} - Média**")
+                    st.info(f"**Tabela 2.1 - Média**")
                     heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
                     st.pyplot(heatmap1.figure)
-                    globals.graphic_list.append('graph1')
-                    st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) da Média dos Dados dos Municípios')
+                    st.info(f'Gráfico 2.1 - Mapa de Calor (Heatmap) da Média dos Dados dos Municípios')
 
                 with col2:
                     crunched_std = formatDf(globals.crunched_std)
                     st.dataframe(globals.crunched_std)
-                    globals.table_list.append('table5')
-                    st.info(f"**Tabela {len(globals.table_list)} - Desvio Padrão**")
+                    st.info(f"**Tabela 2.2 - Desvio Padrão**")
                     heatmap2 = generate_heatmap(crunched_std, 'gray')
                     st.pyplot(heatmap2.figure)
-                    globals.graphic_list.append('graph2')
-                    st.info(f'Gráfico {len(globals.graphic_list)} - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')
+                    st.info(f'Gráfico 2.2 - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')
 
             pdf2 = st.checkbox('Deseja incluir a seção de Visão dos Dados e Gráficos de Mapas de Calor no relatório?')
             if pdf2:
@@ -731,9 +726,8 @@ def pagina_analise_por_grupos():
                 st.dataframe(feature_importances)
 
                 
-                globals.table_list.append('table2') 
                 texto_tabela = f'Importância das Variáveis no Modelo de Árvore de Decisão'
-                st.info(f"Tabela {globals.table_list.index('table2')+1} - {texto_tabela}")
+                st.info(f"Tabela 3.2.1 - {texto_tabela}")
                 #st.info(f'Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
 
                 # Create a larger figure
@@ -745,9 +739,8 @@ def pagina_analise_por_grupos():
                 # Show the plot in Streamlit
                 st.pyplot(fig)
 
-                globals.img_list.append('img2') 
                 texto_imagem = f'Árvore de Decisão'
-                st.info(f"Figura {globals.img_list.index('img2')+1} - {texto_imagem}")
+                st.info(f"Figura 3.2.1 - {texto_imagem}")
                 #st.info(f"Figura 2 - Árvore de Decisão")
                 
                 #gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
@@ -796,9 +789,8 @@ def pagina_analise_por_grupos():
                 #st.dataframe(novo_df, hide_index=True)
 
 
-                globals.table_list.append('table6')
                 texto_tabela = f'Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos'
-                st.info(f'Tabela {len(globals.table_list)} - {texto_tabela}')
+                st.info(f'Tabela 3.1.1 - {texto_tabela}')
                 #gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
             
             pdf_3_1 = st.checkbox("Deseja incluir a seção de agrupamentos com SHAP no PDF do relatório?")
@@ -904,7 +896,7 @@ def pagina_analise_por_grupos():
             <header>
                 <h2>3. Análise dos agrupamentos</h2>
             </header>
-            <h3> Análise dos agrupamentos com SHAP</h3>
+            <h3> 3.1. Análise dos agrupamentos com SHAP</h3>
             <p class="table-text">Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias..</p>
@@ -916,8 +908,6 @@ def pagina_analise_por_grupos():
             </div>
 
             <div class="evitar-quebra-pagina">
-            <p class="mensagem">Mapa SOM completo</p>
-            ***
             </div>
             
             </body>
@@ -935,7 +925,7 @@ def pagina_analise_por_grupos():
                 html = html.replace(f'level0 col{i+1}"', f'level0 col{i+1}" style="background-color: {cores[i]}" ')
         
         
-            html = html.replace('tabela_secao_3', f"Tabela {globals.table_list.index(nome_tabela)+1} - {texto_tabela}")
+            html = html.replace('tabela_secao_3', f"Tabela 3.1.1 - {texto_tabela}")
             path = os.path.join(f"secao3_3_1.pdf")
             weasyprint.HTML(string=html).write_pdf(path)
 
@@ -1015,7 +1005,7 @@ def pagina_analise_por_grupos():
 
             <body>
             <!--- *())*()* aqui vai ser caso n tenha o anterior--->
-            <h3> Análise de agrupamentos com Árvore de Decisão </h3>
+            <h3> 3.2. Análise de agrupamentos com Árvore de Decisão </h3>
             <p class="table-text"> Esta seção divide-se em duas partes: Primeiro, uma tabela que lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. Em seguida, a própria imagem da árvore de decisões.<br>
             
             
@@ -1048,7 +1038,7 @@ def pagina_analise_por_grupos():
             
             try:
                 html = html.replace('*-*-*-*-*', tabela_arvore_decisao['dados'].to_html())
-                html = html.replace('tabela_secao_3_2', f"Tabela {globals.table_list.index(tabela_arvore_decisao['tabela_nome'])+1} - {tabela_arvore_decisao['tabela_texto']}")
+                html = html.replace('tabela_secao_3_2', f"Tabela  3.2.1 - {tabela_arvore_decisao['tabela_texto']}")
                 
                 caminho_salvo = "arvore_decisao.png"
                 caminho_atual = os.getcwd()
@@ -1056,7 +1046,7 @@ def pagina_analise_por_grupos():
                 imagem_arvore_decisao['dados'].savefig("arvore_decisao.png")
                 
                 html = html.replace('******', f'<img src="file:///{caminho_final}" alt="Árvore de decisão" class="a4-size">')
-                html = html.replace('imagem_secao_3_2', f"Imagem {globals.img_list.index(imagem_arvore_decisao['imagem_nome'])+1} - {imagem_arvore_decisao['imagem_texto']}")
+                html = html.replace('imagem_secao_3_2', f"Imagem 3.2.1 - {imagem_arvore_decisao['imagem_texto']}")
             except Exception as error:
                 print(error)
             
@@ -1239,10 +1229,10 @@ def pagina_analise_por_grupos():
                         # Concatenando todas as linhas filtradas
                         filtered_df = pd.concat(filtered_rows).drop_duplicates().reset_index(drop=True)
                         st.dataframe(filtered_df)
-                        st.info(f"**Tabela 4.{i+4} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
+                        st.info(f"**Tabela 4.{i+1} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
 
                         html_df = filtered_df.to_html(index=False)
-                        html_df += f'<p class="legenda-tabela"> Tabela {i+4} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}</p>'
+                        html_df += f'<p class="legenda-tabela"> Tabela 4.{i} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}</p>'
                         html_clusters += html_df
 
                         #Mapas

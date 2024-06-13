@@ -8,6 +8,8 @@ import plotly.express as px
 from PIL import Image
 import branca.colormap as cm
 from branca.colormap import linear
+import os
+import weasyprint
 
 import folium
 import json
