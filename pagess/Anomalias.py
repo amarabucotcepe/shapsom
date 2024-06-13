@@ -161,7 +161,7 @@ def criar_pdf_anomalias(df_anomalias: pd.DataFrame):
 
             <body>
             <header>
-                <h2>Anomalias</h2>
+                <h2>6. Anomalias</h2>
             </header>
             <p class="table-text">A análise de anomalias foi conduzida utilizando um Mapa Auto-Organizável (SOM) para identificar pontos de dados que se desviam significativamente do padrão observado.
     Com as coordenadas dos pontos no SOM, o centroide do mapa foi calculado. Este centroide é determinado utilizando a mediana das coordenadas x e y de todos os pontos, o que fornece uma medida menos sensível a outliers em comparação com a média. Então, são calculadas as distâncias dos pontos para o centroide do mapa.
