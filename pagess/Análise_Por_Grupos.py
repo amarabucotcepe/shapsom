@@ -1383,4 +1383,7 @@ def pagina_analise_por_grupos():
                 st.subheader(f'Seção {i+1} - Erro')
 
 
-    pagina_anomalias(gerar_df_shap())
+        try:
+            pagina_anomalias(gerar_df_shap())
+        except:
+            print('Continuando...')
