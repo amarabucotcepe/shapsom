@@ -277,7 +277,7 @@ def pagina_analise_por_grupos():
                 st.write('Escolha a base de dados.')
             else:
                 st.markdown('Esta seção trará informações gerais sobre o arquivo de entrada escolhido pelo usuário e os parâmetros utilizados para a criação do mapa SOM.')
-                
+
                 gerarEspaco()
                 with st.expander('Visualizar Descrição do arquivo de entrada'):
                     st.write('#### 1.1 Dicionário de Dados')
@@ -302,7 +302,7 @@ def pagina_analise_por_grupos():
                         st.markdown(dicionarioDados.style.hide(axis="index").to_html(), unsafe_allow_html=True)
 
                     gerarEspaco()
-                    
+
                     st.info(f'Tabela 1.1 - Dicionário de Dados')
 
                     st.write('#### 1.2 Parâmetros de Treinamento')
@@ -343,7 +343,7 @@ def pagina_analise_por_grupos():
                 w_paragrafo, h_paragrafo = message_paragrafo.wrap(page_w -2*inch, page_h)
                 message_paragrafo.drawOn(c, inch, page_h - h- h_paragrafo)
                 return c, h+h_paragrafo+30
-            
+
             def gerarLegenda(c,paragrafo,h):
                 page_w, page_h = letter
                 style_paragrafo = ParagraphStyle("paragrafo", fontName="Helvetica-Oblique", fontSize=10, alignment=4, leading=18, encoding="utf-8", textColor = 'blue')
@@ -351,7 +351,7 @@ def pagina_analise_por_grupos():
                 w_paragrafo, h_paragrafo = message_paragrafo.wrap(page_w -2*inch, page_h)
                 message_paragrafo.drawOn(c, inch, page_h - h- h_paragrafo)
                 return c, h+h_paragrafo+20
-            
+
             def gerarTabela(data):
                 if(len(descDados)==0):
                     data = [['Fator','Nome da coluna','Tipo de dado']]+data
@@ -379,7 +379,7 @@ def pagina_analise_por_grupos():
                 table = Table(data, colWidths=col_widths)
                 table.setStyle(style)
                 return table
-            
+
             def gerarTabelaPdf(c,data,h,start):
                 if(len(data)>start):
                     data2 = []
@@ -405,7 +405,7 @@ def pagina_analise_por_grupos():
                     c.showPage()
                     h=65
                 return c, h
-            
+
             def gerarSecaoTabela(c,h,dados):
                 start = 0
                 start2 = 0
@@ -424,7 +424,7 @@ def pagina_analise_por_grupos():
                 c = canvas.Canvas('secao1.pdf')
                 c, h = gerarSecao(c,'t','Seção 1 - Descrição do arquivo de entrada',65)
                 c, h = gerarSecao(c,'s','1.1 Dicionário de Dados',h)
-                c, h = gerarSecao(c,'p',texto1,h)   
+                c, h = gerarSecao(c,'p',texto1,h)
                 c, h = gerarSecao(c,'p',textoDicionario,h-28)
                 c, h = gerarSecaoTabela(c,h,np.array(dicionarioDados))
                 c, h = gerarLegenda(c,'Tabela 1.1 - Dicionário de Dados', h+5)
@@ -459,7 +459,7 @@ def pagina_analise_por_grupos():
                 except Exception as error:
                     print(error)
                     pass
-            
+
 
 
         def gerar_df_shap():
@@ -519,22 +519,42 @@ def pagina_analise_por_grupos():
             return formated_df
 
         def generate_heatmap(data, cmap):
-                largura, altura = data.shape
-                sns.set_theme()
-                plt.figure(figsize=(altura/9.15 ,largura/7))
-                heatmap =sns.heatmap(data,
-                    annot=False,
-                    cmap=cmap,
-                    square=True,
-                    vmin=0,
-                    vmax = 1,
-                    cbar_kws={'orientation': 'vertical'}
+            if not isinstance(data, pd.DataFrame):
+                data = pd.DataFrame(data)
+            altura, largura  = data.shape
+            fig_width = 300
+            fig_height = 360 if altura < 45 else altura * 8
+            fig = px.imshow(data, color_continuous_scale=cmap, aspect='auto', zmin=0, zmax=1)
+            fig.update_layout(
+                width=fig_width,
+                height=fig_height,
+                coloraxis_colorbar=dict(
+                    orientation='v',
+                    ticks='outside',
+                    ticklen=1,
+                    tickwidth=1))
+            return fig
 
-                    )
+        def generate_heatmapPDF(data, cmap):
+            largura, altura = data.shape
+            fig, ax = plt.subplots(figsize=(altura/9.15, largura/7))
+            from mpl_toolkits.axes_grid1 import make_axes_locatable
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="5%", pad=0.1)
+            heatmap = sns.heatmap(data,
+                                annot=False,
+                                cmap=cmap,
+                                square=True,
+                                vmin=0,
+                                vmax=1,
+                                ax=ax,
+                                cbar_ax=cax,
+                                cbar_kws={'orientation': 'vertical'},
+                                xticklabels=2)
+            plt.setp(ax.get_xticklabels(), rotation=0, ha="right", rotation_mode="anchor")
+            return heatmap
 
-                return heatmap
-
-        def gerar_pdf_secao2e5(filename : str, titulo: str, text_data, filtro_min=0.0, filtro_max=500):
+        def gerar_pdf_secao2e5(filename : str, titulo: str, text_data, legenda1: str, legenda2: str, filtro_min=0.0, filtro_max=500):
             image_filenames = []
             numeric_cols = list(globals.crunched_df.select_dtypes(include=['float64', 'int64']).columns)
             max_rows = math.ceil(len(globals.crunched_df)/ 3)
@@ -549,7 +569,7 @@ def pagina_analise_por_grupos():
                 _titulo = f'Médias {partition[0]+1}-{partition[-1]+1}'
                 df_media_filtrado = globals.crunched_df.iloc[partition]
                 df_media_filtrado_formatado = formatDf(df_media_filtrado)
-                heatmap_media = generate_heatmap(df_media_filtrado_formatado, 'YlOrRd')
+                heatmap_media = generate_heatmapPDF(df_media_filtrado_formatado, 'YlOrRd')
                 heatmap_media.figure.savefig(f'{_titulo}.png', bbox_inches='tight', pad_inches=0.05)
                 avg_imagens.append(PIL.Image.open(f'{_titulo}.png'))
                 image_filenames.append(f'{_titulo}.png')
@@ -561,7 +581,7 @@ def pagina_analise_por_grupos():
                 _titulo = f'Desvios Padrão {partition[0]+1}-{partition[-1]+1}'
                 df_dp_filtrado = globals.crunched_std.iloc[partition]
                 df_dp_filtrado_formatado = formatDf(df_dp_filtrado)
-                heatmap_dp = generate_heatmap(df_dp_filtrado_formatado, 'gray')
+                heatmap_dp = generate_heatmapPDF(df_dp_filtrado_formatado, 'gray')
                 heatmap_dp.figure.savefig(f'{_titulo}.png', bbox_inches='tight', pad_inches=0.05)
                 std_imagens.append(PIL.Image.open(f'{_titulo}.png'))
                 image_filenames.append(f'{_titulo}.png')
@@ -604,9 +624,19 @@ def pagina_analise_por_grupos():
                     spacing_x = 0.25 * inch
                     x_offset = (page_w - 2 * desired_w) / 2
                     y_offset = page_h - desired_h - init_offset - acc_offset
-                    acc_offset += desired_h * 1.0625
+                    acc_offset += desired_h
                     c.drawImage(ImageReader(a), x_offset-(spacing_x/2), y_offset, width=desired_w, height=desired_h)
                     c.drawImage(ImageReader(b), x_offset+desired_w+(spacing_x/2), y_offset, width=desired_w, height=desired_h)
+
+                if i == len(page_data) - 1 and (legenda1 or legenda2):
+                    legend1 = Paragraph(legenda1, ParagraphStyle('Legenda1', fontName="Helvetica-Oblique", fontSize=10, alignment=4, leading=18, encoding="utf-8", textColor = 'blue'))
+                    legend2 = Paragraph(legenda2, ParagraphStyle('Legenda2', fontName="Helvetica-Oblique", fontSize=10, alignment=4, leading=18, encoding="utf-8", textColor = 'blue'))
+                    max_legend_width = (page_w - 2 * inch) / 2 - 10
+                    w1, h1 = legend1.wrap(max_legend_width, page_h)
+                    w2, h2 = legend2.wrap(max_legend_width, page_h)
+                    legend1.drawOn(c, inch, y_offset - max(h1, h2) - 10)
+                    legend2.drawOn(c, inch + max_legend_width + 20, y_offset - max(h1, h2) - 10)
+
                 c.save()
 
             # Juntando páginas
@@ -658,7 +688,10 @@ def pagina_analise_por_grupos():
                 ("Nos gráficos referentes aos Mapas de Calor:", ""),
                 ("As linhas representam os municípios, que estão em ordem alfabética;", ""),
                 ("As colunas representam os fatores selecionados pelo usuário na base de dados;", "")]
-            
+
+            legenda21 = f'Gráfico 2.1 - Mapa de Calor (Heatmap) da Média dos Dados dos Municípios'
+            legenda22 = f'Gráfico 2.2 - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios'
+
             with st.expander('Visualizar Visão Geral de Dados e Mapas de Calor'):
                 col1, col2 = st.columns(2)
                 with col1:
@@ -666,7 +699,7 @@ def pagina_analise_por_grupos():
                     st.dataframe(globals.crunched_df)
                     st.info(f"**Tabela 2.1 - Média**")
                     heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
-                    st.pyplot(heatmap1.figure)
+                    st.plotly_chart(heatmap1)
                     st.info(f'Gráfico 2.1 - Mapa de Calor (Heatmap) da Média dos Dados dos Municípios')
 
                 with col2:
@@ -674,12 +707,12 @@ def pagina_analise_por_grupos():
                     st.dataframe(globals.crunched_std)
                     st.info(f"**Tabela 2.2 - Desvio Padrão**")
                     heatmap2 = generate_heatmap(crunched_std, 'gray')
-                    st.pyplot(heatmap2.figure)
+                    st.plotly_chart(heatmap2)
                     st.info(f'Gráfico 2.2 - Mapa de Calor (Heatmap) do Desvião Padrão dos Dados dos Municípios')
 
             pdf2 = st.checkbox('Deseja incluir a seção de Visão dos Dados e Gráficos de Mapas de Calor no relatório?')
             if pdf2:
-                gerar_pdf_secao2e5("secao2.pdf","Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor", text_secao2)
+                gerar_pdf_secao2e5("secao2.pdf","Seção 2 - Visão dos Dados e Gráficos de Mapas de Calor", text_secao2, legenda21, legenda22)
             else:
                 caminho = os.getcwd()
                 caminho = os.path.join(caminho,f"secao2.pdf")
@@ -723,12 +756,12 @@ def pagina_analise_por_grupos():
                 # feature_importances = pd.DataFrame(reg.feature_importances_,
                 #                                 index = X.columns,
                 #                                 columns=['importance']).sort_values('importance', ascending=False)
-               
+
                 feature_importances = pd.DataFrame({
                     "Variáveis": X.columns,
                     "Importância": reg.feature_importances_
                 }).sort_values("Importância", ascending=False)
-                
+
 
                 # st.dataframe(feature_importances, column_config={
                 #     '': 'Variáveis',
@@ -736,7 +769,7 @@ def pagina_analise_por_grupos():
                 # })
                 st.dataframe(feature_importances)
 
-                
+
                 texto_tabela = f'Importância das Variáveis no Modelo de Árvore de Decisão'
                 st.info(f"Tabela 3.2.1 - {texto_tabela}")
                 #st.info(f'Tabela 2 -  Importância das Variáveis no Modelo de Árvore de Decisão')
@@ -753,11 +786,11 @@ def pagina_analise_por_grupos():
                 texto_imagem = f'Árvore de Decisão'
                 st.info(f"Figura 3.2.1 - {texto_imagem}")
                 #st.info(f"Figura 2 - Árvore de Decisão")
-                
+
                 #gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
-            
+
             pdf_3_2 = st.checkbox("Deseja incluir a seção de agrupamentos com árvore de decisão no PDF do relatório?")
-            
+
             if pdf_3_2:
                 gerar_pdf_3_2({'dados': feature_importances, "tabela_nome": "table2", "tabela_texto":texto_tabela }, {"dados": fig, "imagem_nome":'img2', "imagem_texto": texto_imagem})
             else:
@@ -770,7 +803,7 @@ def pagina_analise_por_grupos():
                 except Exception as error:
                     print(error)
                     pass
-            
+
 
         def secao3():
             st.subheader('**Seção 3.1 - Análise de agrupamentos com SHAP**')
@@ -803,9 +836,9 @@ def pagina_analise_por_grupos():
                 texto_tabela = f'Influências Positivas(azul) e Negativas(vermelho) das Variáveis nos Grupos'
                 st.info(f'Tabela 3.1.1 - {texto_tabela}')
                 #gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
-            
+
             pdf_3_1 = st.checkbox("Deseja incluir a seção de agrupamentos com SHAP no PDF do relatório?")
-            
+
             if pdf_3_1:
                 gerar_pdf_3_1(styled_df, 'table6', texto_tabela)
             else:
@@ -818,9 +851,9 @@ def pagina_analise_por_grupos():
                 except Exception as error:
                     print(error)
                     pass
-                
+
             arvore_decisao()
-            
+
         def gerar_pdf_3_1(styled_df: pd.DataFrame, nome_tabela, texto_tabela):
             # Criando o esqueleto do HTML que irá formar o PDF
             html = f"""<!DOCTYPE html>
@@ -851,7 +884,7 @@ def pagina_analise_por_grupos():
                 margin-bottom: 10px; /* Margem para alinhamento com as extremidades da página */
                 font-size: 12px;
             }}
-            
+
             .legenda-tabela {{
                 font-size: 10px;
                 font-style: italic;
@@ -911,31 +944,31 @@ def pagina_analise_por_grupos():
             <p class="table-text">Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
             Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
             "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias..</p>
-            
+
             <div class="evitar-quebra-pagina">
             *-*-*-*-*
-            
+
             <p class="legenda-tabela">tabela_secao_3</p>
             </div>
 
             <div class="evitar-quebra-pagina">
             </div>
-            
+
             </body>
             </html>
             """
-            
-            
+
+
             tabela_df = globals.shapsom_data.copy()
             tabela_unica = tabela_df.drop_duplicates(subset=['Cor Central', 'Grupo'])
-            
+
             html = html.replace('*-*-*-*-*', styled_df.to_html())
             cores = tabela_unica["Cor Central"].tolist()
-           
+
             for i in range(len(cores)):
                 html = html.replace(f'level0 col{i+1}"', f'level0 col{i+1}" style="background-color: {cores[i]}" ')
-        
-        
+
+
             html = html.replace('tabela_secao_3', f"Tabela 3.1.1 - {texto_tabela}")
             path = os.path.join(f"secao3_3_1.pdf")
             weasyprint.HTML(string=html).write_pdf(path)
@@ -970,7 +1003,7 @@ def pagina_analise_por_grupos():
                 margin-bottom: 10px; /* Margem para alinhamento com as extremidades da página */
                 font-size: 12px;
             }}
-            
+
             .legenda-tabela {{
                 font-size: 10px;
                 font-style: italic;
@@ -1003,7 +1036,7 @@ def pagina_analise_por_grupos():
             .evitar-quebra-pagina {{
                 page-break-inside: avoid; /* Evita quebra de página dentro do bloco */
             }}
-            
+
             .a4-size {{
                 width: 210mm; /* Largura de uma folha A4 em milímetros */
                 height: auto; /* Altura proporcional */
@@ -1018,15 +1051,15 @@ def pagina_analise_por_grupos():
             <!--- *())*()* aqui vai ser caso n tenha o anterior--->
             <h3> 3.2. Análise de agrupamentos com Árvore de Decisão </h3>
             <p class="table-text"> Esta seção divide-se em duas partes: Primeiro, uma tabela que lista as variáveis utilizadas no modelo de árvore de decisão juntamente com sua importância relativa. Em seguida, a própria imagem da árvore de decisões.<br>
-            
-            
-            
+
+
+
             A importância de uma variável indica quanto ela contribui para a decisão final do modelo. Valores mais altos de importância sugerem que a variável tem um impacto maior na previsão do modelo. Dessa forma, quanto maior o valor
             de sua importância na tabela, maior a importância dessa variável em geral (desconsiderando agrupamentos). Da mesma forma, quanto mais alto ela estiver posicionada na Árvore de Decisão, maior sua importância.
             Lembrando que essa Árvore de Decisão mostra a importância das variáveis num contexto mais amplo e desconsidera a análise posterior utilizando agrupamentos.
-            
+
             </p>
-            
+
             <div class="evitar-quebra-pagina">
             *-*-*-*-*
             <p class="legenda-tabela">tabela_secao_3_2</p>
@@ -1040,30 +1073,30 @@ def pagina_analise_por_grupos():
             </body>
             </html>
             """
-            
+
             # caso nao tiver a secao anterior de SHAP, colocar isso no inicio
             # header_inicio = '''<header>
             #    <h2>3. Análise dos agrupamentos</h2>
             #    </header>'''
-            #tabela_arvore_decisao['dados'] = 
-            
+            #tabela_arvore_decisao['dados'] =
+
             try:
                 html = html.replace('*-*-*-*-*', tabela_arvore_decisao['dados'].to_html())
                 html = html.replace('tabela_secao_3_2', f"Tabela  3.2.1 - {tabela_arvore_decisao['tabela_texto']}")
-                
+
                 caminho_salvo = "arvore_decisao.png"
                 caminho_atual = os.getcwd()
                 caminho_final = os.path.join(caminho_atual,f"{caminho_salvo}")
                 imagem_arvore_decisao['dados'].savefig("arvore_decisao.png")
-                
+
                 html = html.replace('******', f'<img src="file:///{caminho_final}" alt="Árvore de decisão" class="a4-size">')
                 html = html.replace('imagem_secao_3_2', f"Imagem 3.2.1 - {imagem_arvore_decisao['imagem_texto']}")
             except Exception as error:
                 print(error)
-            
+
             path = os.path.join(f"secao3_3_2.pdf")
             weasyprint.HTML(string=html).write_pdf(path)
-            
+
         def gerar_pdf_4(html_clusters):
             html = f"""<!DOCTYPE html>
             <html lang="en">
@@ -1158,7 +1191,7 @@ def pagina_analise_por_grupos():
 
                 </html>
                 """
-            
+
             html = html.replace('---===---', html_clusters)
             path = os.path.join(f"secao4.pdf")
             weasyprint.HTML(string=html).write_pdf(path)
@@ -1219,7 +1252,7 @@ def pagina_analise_por_grupos():
                         html_clusters += f'<p class="texto-clusters">{output_column} do Grupo {i}: {media_valor}</p>'
                         html_clusters += f'<p class="texto-clusters">Cidades do cluster: {", ".join(sorted(set(grupo_df["municipios"])))}</p>'
 
-                        
+
                         st.info(f"**Tabela 4.{i} - Municípios do Grupo {i}**")
 
                         df_shap_grupo = novo_df.iloc[:, [0, i]]
@@ -1309,7 +1342,7 @@ def pagina_analise_por_grupos():
                         de valores fornecido pelo usuário.''')
 
             last_column_name = globals.crunched_df.columns[-1]
-            
+
             col1, col2 = st.columns(2)
             with col1:
                 val_min = st.number_input("Valor mínimo", value= 0, placeholder="Digite um número", min_value = 0, max_value=100)
@@ -1328,6 +1361,9 @@ def pagina_analise_por_grupos():
                 ("Importante:", "-Bold"),
                 (f'- As imagens abaixo mostram os dados cujo o valor da coluna "{last_column_name}" está', ""),
                 (f"  compreendido entre {val_min}% e {val_max}%", "")]
+
+            legenda51 = f'Gráfico 5.1 - Média'
+            legenda52 = f'Gráfico 5.2 - Desvio Padrão'
 
             if val_min > val_max:
                 st.write("**O valor mínimo deve ser menor que o valor máximo**")
@@ -1348,19 +1384,19 @@ def pagina_analise_por_grupos():
                             st.dataframe(media_df_filtrado)
                             st.info(f"**Tabela 5.1 - Média**")
                             heatmap1 = generate_heatmap(crunched_df, 'YlOrRd')
-                            st.pyplot(heatmap1.figure)
+                            st.plotly_chart(heatmap1)
                             st.info(f"**Gráfico 5.1 - Média**")
 
                         with col2:
                             st.dataframe(std_filtrado)
                             st.info(f"**Tabela 5.2 - Desvio Padrão**")
                             heatmap2 = generate_heatmap(crunched_std, 'gray')
-                            st.pyplot(heatmap2.figure)
+                            st.plotly_chart(heatmap2)
                             st.info(f"**Gráfico 5.2 - Desvio Padrão**")
 
             pdf_s5 = st.checkbox('Deseja incluir a seção de Análise por Filtro de Triagem no relatório?')
             if pdf_s5:
-                gerar_pdf_secao2e5("secao5.pdf","Seção 5 - Filtro de Triagem", text_secao5, val_min, val_max)
+                gerar_pdf_secao2e5("secao5.pdf","Seção 5 - Filtro de Triagem", text_secao5, legenda51, legenda52, val_min, val_max)
             else:
                 caminho = os.getcwd()
                 caminho = os.path.join(caminho,f"secao5.pdf")
@@ -1387,7 +1423,7 @@ def pagina_analise_por_grupos():
         try:
             pagina_anomalias(gerar_df_shap())
             pdf_6 = st.checkbox("Adicionar a seção de anomalias no PDF do relatório final?")
-            
+
             if pdf_6:
                 if (globals.df_anomalias is None):
                     pass
