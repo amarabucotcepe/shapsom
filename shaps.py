@@ -40,6 +40,7 @@ from reportlab.platypus import Paragraph
 from unidecode import unidecode
 import imgkit
 import matplotlib as mpl
+import globals
 
 def make_shap(labels, variable_columns, x, y, use_shap, desc="Gerando gráficos SHAP"):
     model = XGBRegressor(objective='reg:squarederror', random_state= 34)
@@ -49,17 +50,13 @@ def make_shap(labels, variable_columns, x, y, use_shap, desc="Gerando gráficos 
     globals.shap_columns = variable_columns
     globals.shap_labels = labels
     explainer = shap.Explainer(model, x)
-    globals.explanations = [shap.Explanation(values=v, base_values=explainer.expected_value, feature_names=variable_columns) for v in explainer(x)]
+    globals.shap_explanations = [shap.Explanation(values=v, base_values=explainer.expected_value, feature_names=variable_columns) for v in explainer(x)]
 
-    # Salva os mapas um por um e exibe uma barrinha de progresso para o usuário
-    if use_shap:
-        for i, exp in tqdm(enumerate(globals.explanations), desc=desc, total=len(globals.explanations)):
-            fig = plt.figure()
-            shap.waterfall_plot(exp, show=False)
-            plt.title(labels[i])
-            fig.set_size_inches(16, 8)
-            fig.subplots_adjust(left=0.4)
-            plt.close(fig)
-            globals.shape_results[labels[i].split(" - ")[0]] = {}
-            globals.shape_results[labels[i].split(" - ")[0]]['data'] = exp.data.copy()
-            globals.shape_results[labels[i].split(" - ")[0]]['values'] = exp.values.copy()
+    globals.shap_data['labels'] = globals.shap_labels
+    globals.shap_data['columns'] = globals.shap_columns
+    globals.shap_data['explanations'] = globals.shap_explanations
+    
+    for i, exp in tqdm(enumerate(globals.shap_explanations), desc=desc, total=len(globals.shap_explanations)):
+        globals.shape_results[labels[i]] = {}
+        globals.shape_results[labels[i]]['data'] = exp.data.copy()
+        globals.shape_results[labels[i]]['values'] = exp.values.copy()

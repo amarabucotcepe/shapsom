@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8501
 
 # Executa o aplicativo
-CMD ["streamlit", "run", "--server.address", "0.0.0.0", "home.py"]
+CMD ["streamlit", "run", "--server.address", "0.0.0.0", "Página_Inicial.py"]
