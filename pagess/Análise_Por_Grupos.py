@@ -76,7 +76,7 @@ def pagina_analise_por_grupos():
         has_databases = False
 
     if has_databases:
-        df =  globals.current_database
+        df =  globals.current_database       
 
 
         def secao1():
@@ -1226,8 +1226,11 @@ def pagina_analise_por_grupos():
                         da "Análise de Agrupamento" (Seção 3), organizando-as em uma disposição paralela. Isso tem o
                         objetivo de destacar de forma mais clara as disparidades nas estruturas dos agrupamentos.''')
             with st.expander('Visualizar Diferenças entre Agrupamentos'):
-                for i in range(max_grupo+1):
+                for i in range(max_grupo+1):           
                     if i in grupos.groups:
+                        filename = f'mapa{i}.html'
+                        if os.path.exists(filename):
+                            os.remove(filename)
                         #Tabelas
                         grupo_df = grupos.get_group(i)
                         media_valor = grupo_df[output_column].mean()

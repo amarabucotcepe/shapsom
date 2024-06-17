@@ -123,9 +123,10 @@ def get_som_data(som: MiniSom, labels, x, y, cluster_distance) -> pd.DataFrame:
                 _score = coord_dict[c]["cell_score"]
                 _x = c[0]
                 _y = c[1]
-                _color_percent = 0.5 if (min_score == max_score) else (_score - min_score) / (max_score - min_score)
-                _hue_hsv = (max_hsv * _color_percent) + (min_hsv * (1 - _color_percent))
-                _color_hex = hsv_to_hex([_hue_hsv, 1, 1])
+                # _color_percent = 0.5 if (min_score == max_score) else (_score - min_score) / (max_score - min_score)
+                # _hue_hsv = (max_hsv * _color_percent) + (min_hsv * (1 - _color_percent))
+                # _color_hex = hsv_to_hex([_hue_hsv, 1, 1])
+                _color_hex = central_color
                 som_data_list.append([_labels, round(_score, 2), _x, _y, _color_hex, central_color, i+1])
 
         score_dict = {}
