@@ -93,9 +93,16 @@ def pagina_inicial():
 
         selected_df = df.drop(columns=globals.current_hidden_columns)
 
-        textoSOM = '''Um Mapa SOM, ou Mapa Auto-Organizável, é uma técnica de aprendizado não supervisionado usada para visualizar e organizar dados complexos em uma representação bidimensional.
+        textoSOM = '''Um Mapa SOM, ou Mapa Auto-Organizável, é uma técnica de aprendizado não supervisionado usada para visualizar e organizar dados complexos 
+        em uma representação bidimensional.        
                 '''
         st.markdown(textoSOM)
+
+        st.markdown('''
+        Atente-se as diferentes cores dentro do mapa. As cores identificam seus respectivos grupos, e cores diferentes indicam grupos diferentes. As notas
+        de cada célula, são baseadas na variável de saída de cada município, variável essa definida anteriormente na Escolha de Colunas. Os tamanhos das células variam de acordo
+        com o valor dessas notas, podendo aumentar ou diminuir.
+                    ''')
 
         st.divider()
 

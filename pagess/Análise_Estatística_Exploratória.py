@@ -262,10 +262,10 @@ def pagina_analise_estatistica_exploratoria():
         
         
         with st.expander('Visualizar Gráfico de Dispersão'):
-            opcoes = df.columns[3:-1].tolist()
+            opcoes = df.columns[3:].tolist()
             variavel = st.selectbox('Selecione a variável', opcoes, index= len(opcoes)-1)
-            nome_variavel_padrao = df.columns[-2]
-            st.markdown(f'Caso queira trocar a variável padrão, que é "{nome_variavel_padrao}", selecione uma nova variável e gere o gráfico de dispersão novamente.')
+            nome_variavel_padrao = df.columns[-1]
+            st.markdown(f'Caso queira trocar a variável padrão, que é "{nome_variavel_padrao}", sua variável de saída padrão, selecione uma nova variável e gere o gráfico de dispersão novamente.')
             # Create a scatterplot of the penultimate column
             fig = px.scatter(
                 dfm.reset_index(),

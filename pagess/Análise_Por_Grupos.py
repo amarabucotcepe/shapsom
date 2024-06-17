@@ -524,7 +524,7 @@ def pagina_analise_por_grupos():
             altura, largura  = data.shape
             fig_width = 300
             fig_height = 360 if altura < 45 else altura * 8
-            fig = px.imshow(data, color_continuous_scale=cmap, aspect='auto', zmin=0, zmax=1)
+            fig = px.imshow(data, color_continuous_scale=cmap, aspect='auto', zmin=0, zmax=1, labels=dict(x="Column", y="Municipios", color="Value"))
             fig.update_layout(
                 width=fig_width,
                 height=fig_height,
@@ -533,6 +533,7 @@ def pagina_analise_por_grupos():
                     ticks='outside',
                     ticklen=1,
                     tickwidth=1))
+            fig.update_traces(hovertemplate='Municipio: %{y}<br>Variável: %{x}<br>Valor: %{z}')
             return fig
 
         def generate_heatmapPDF(data, cmap):
@@ -804,18 +805,7 @@ def pagina_analise_por_grupos():
                     print(error)
                     pass
 
-
-        def secao3():
-            st.subheader('**Seção 3.1 - Análise de agrupamentos com SHAP**')
-
-            st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
-            Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
-            "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
-
-            with st.expander('Visualizar Análise de agrupamentos com SHAP'):
-                novo_df = gerar_df_shap()
-
-                def change_color(val):
+        def change_color(val):
                     if isinstance(val, (int, float)):
                         if(val < 0):
                             color = 'red'
@@ -826,7 +816,17 @@ def pagina_analise_por_grupos():
                             color = ''
 
                         return f'color: {color}'
+                                    
+        def secao3():
+            st.subheader('**Seção 3.1 - Análise de agrupamentos com SHAP**')
 
+            st.markdown('''Nesta seção, apresentamos os grupos identificados e as variáveis que mais influenciaram na formação desses grupos.
+            Um "agrupamento" reúne dados que são mais semelhantes em termos de suas características globais. Esses grupos são utilizados na aplicação de IA através de bases de dados (tabelas) fornecidas pela área usuária para o processamento com Redes Neurais Artificiais.
+            "Agrupamento" é o processo de reunir, por exemplo, municípios, com base em suas semelhanças, visando realizar triagens para guiar auditorias.''')
+
+            with st.expander('Visualizar Análise de agrupamentos com SHAP'):
+                novo_df = gerar_df_shap()
+                
                 styled_df = novo_df.style.applymap(change_color)
 
                 st.dataframe(styled_df)
@@ -1241,7 +1241,8 @@ def pagina_analise_por_grupos():
                         def apply_color(val):
                             return f"background-color: {cor_grupo}; "
 
-                        st.dataframe(grupo_df.style.applymap(apply_color).format({output_column:'{:.2f}'}), column_order=['municipios', 'Nota', 'Grupo', 'Cor', output_column] ,column_config={
+                        st.text('Municípios do grupo:')
+                        st.dataframe(grupo_df.style.applymap(apply_color).format({output_column:'{:.2f}'}),hide_index=True, column_order=['municipios', 'Nota', 'Grupo', 'Cor', output_column] ,column_config={
                             'municipios': 'Municípios',
                             'Nota': None,
                             'Grupo': 'Grupo',
@@ -1272,11 +1273,14 @@ def pagina_analise_por_grupos():
 
                         # Concatenando todas as linhas filtradas
                         filtered_df = pd.concat(filtered_rows).drop_duplicates().reset_index(drop=True)
-                        st.dataframe(filtered_df)
-                        st.info(f"**Tabela 4.{i+1} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
+                        filtered_df = filtered_df.style.applymap(change_color)
+                        st.divider()
+                        st.text('Influências de Variáveis:')
+                        st.dataframe(filtered_df, hide_index=True)
+                        st.info(f"**Tabela 4.{i+1} - Variáveis Que Mais Influenciam Positivamente e Negativamente no Grupo {i}**")
 
                         html_df = filtered_df.to_html(index=False)
-                        html_df += f'<p class="legenda-tabela"> Tabela 4.{i} - Valores Que Mais Influenciam Positivamente e Negativamente no Grupo {i}</p>'
+                        html_df += f'<p class="legenda-tabela"> Tabela 4.{i} - Valores Que Mais Influenciam Positivamente (Cor Azul) e Negativamente (Cor Vermelha) no Grupo {i}</p>'
                         html_clusters += html_df
 
                         #Mapas
