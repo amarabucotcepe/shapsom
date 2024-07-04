@@ -11,13 +11,14 @@ from my_utils import create_map, HEX_SHAPE, verificarColunaDesc, convert_numeric
 import numpy as np
 import statistics
 
+from pagess.Relatório_SOM import pagina_som
 from pagess.Análise_Estatística_Exploratória import pagina_analise_estatistica_exploratoria
 from pagess.Análise_Por_Grupos import pagina_analise_por_grupos
 from pagess.Anomalias import pagina_anomalias
 from pagess.Relatório_das_Regiões import relatorio_regioes
 from pagess.Relatório_dos_Municípios import relatorio_municipios
 
-st.set_page_config(page_title="ShapSom", page_icon="🖥️", layout="wide")
+st.set_page_config(page_title="ShapSom", page_icon="🗺️", layout="wide")
 imagem = Image.open('pixelcut-export.png')
 st.image(imagem, width=256)
     
@@ -50,6 +51,8 @@ def pagina_inicial():
         df = pd.read_csv(file, sep=',') if tipo == 'text/csv' else pd.read_excel(file)
         globals.original_database = df.copy()
 
+        
+
         if(verificarColunaDesc(globals.original_database)):
             globals.current_database = globals.original_database.drop(globals.original_database.index[0]).applymap(convert_numeric)
             globals.current_database.index = globals.current_database.index-1
@@ -71,6 +74,7 @@ def pagina_inicial():
 
             st.markdown("Caso deseje modificar a escolha de colunas padrões, clique na opção abaixo:")
             with st.expander("**Escolher colunas**", expanded=False):
+                st.write(df.head())
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     globals.current_label_columns = st.multiselect("Nome", textual_cols, default=[textual_cols[0]], max_selections=1, help='Selecione a coluna que será usada como o identificador principal do conjunto de dados. Esta coluna geralmente contém valores únicos, como nomes de municípios. Por padrão, é a primeira coluna da sua planilha.')
@@ -151,6 +155,7 @@ def pagina_inicial():
                 globals.topology = st.radio("Topologia", options=["Retangular", "Hexagonal"], index=1, help="Topologia do mapa SOM para formação de vizinhanças.")
                 globals.output_influences = st.radio("Coluna de saída influencia nos resultados (experimental)", options=["Sim", "Não"], index=0, help="Se a coluna de saída dos dados de entrada influencia nos resultados finais. Selecione 'Sim' para permitir que a coluna de saída tenha impacto na organização do mapa, ou 'Não' para desconsiderar a coluna de saída durante o treinamento.")
                 update_map = st.button("**Alterar parâmetros**")
+                
 
             has_enough_data = globals.current_label_columns and globals.current_output_columns and len(globals.current_input_columns) >= 2
             if (update_map or globals.file_uploaded_start_flag) and has_enough_data:
@@ -211,7 +216,7 @@ def pagina_inicial():
         globals.file_uploaded_start_flag = False
         globals.som_chart = None
 
-tab1, tab2, tab3, tab4= st.tabs(["Aquisição de Dados e Parametrização", "Análise Estatística Exploratória", "Análise de Agrupamentos", 'Relatórios'])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Aquisição de Dados e Parametrização", "Análise Estatística Exploratória", "Análise de Agrupamentos", 'Mapa SOM', 'Relatórios'])
 
 with tab1:
    pagina_inicial()
@@ -220,5 +225,7 @@ with tab2:
 with tab3:
     pagina_analise_por_grupos()
 with tab4:
+    pass
+with tab5:
     relatorio_regioes()
     relatorio_municipios()
